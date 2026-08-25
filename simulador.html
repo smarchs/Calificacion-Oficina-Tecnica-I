@@ -22,21 +22,21 @@
     --red: #b91c1c;
 
     /* Ponderaciones Finales */
-    --col-n1: #4f46e5;   /* Índigo */
-    --col-n2: #ea580c;   /* Naranja */
-    --col-n3: #059669;   /* Verde */
+    --col-n1: #4f46e5;
+    --col-n2: #ea580c;
+    --col-n3: #059669;
 
     /* Componentes Nota 1 */
-    --c-asist: #0284c7;   /* Celeste */
-    --c-epp: #9333ea;     /* Púrpura */
-    --c-partic: #0d9488;  /* Turquesa */
+    --c-asist: #0284c7;
+    --c-epp: #9333ea;
+    --c-partic: #0d9488;
 
     /* Componentes Nota 2 */
-    --c-tt: #d97706;      /* Ámbar */
-    --c-examen: #e11d48;  /* Rojo / Carmín */
+    --c-tt: #d97706;
+    --c-examen: #e11d48;
 
     /* Componentes Nota 3 */
-    --c-tp: #059669;      /* Verde */
+    --c-tp: #059669;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -69,7 +69,7 @@
     }
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
     background: var(--bg);
     color: var(--text);
@@ -78,13 +78,13 @@
     font-weight: 400;
     line-height: 1.4;
     padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 24px) 56px;
-    max-width: 680px;
+    max-width: 540px;
     margin: 0 auto;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   /* ── HEADER ── */
-  header { margin-bottom: 20px; }
+  header { margin-bottom: 18px; }
   header .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 2px; }
   header h1 { font-size: clamp(18px, 4vw, 22px); font-weight: 700; color: var(--text); letter-spacing: -0.3px; margin-bottom: 4px; }
   header .sub { font-size: 12px; color: var(--muted); }
@@ -94,14 +94,14 @@
     background: var(--card);
     border-radius: 14px;
     border: 1px solid var(--border);
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     display: flex;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
   }
   .card-left {
     flex: 1;
-    padding: clamp(12px, 3vw, 18px);
+    padding: 14px;
     border-right: 1px solid var(--border);
     min-width: 0;
     display: flex;
@@ -109,49 +109,67 @@
     justify-content: center;
   }
   .card-right {
-    width: clamp(100px, 28%, 140px);
+    width: 105px;
     flex-shrink: 0;
     background: var(--surface);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 14px 10px;
-    gap: 8px;
+    padding: 12px 6px;
+    gap: 6px;
   }
-  .card-title { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
   .card-value {
-    font-size: clamp(28px, 6vw, 34px);
+    font-size: 30px;
     font-weight: 700;
     line-height: 1;
     font-variant-numeric: tabular-nums;
     text-align: center;
   }
-  .card-pie { width: 72px; height: 72px; max-width: 100%; }
+
+  /* Contenedor estricto para evitar el bug de escalado en WebKit/iOS */
+  .pie-wrapper {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    max-width: 64px;
+    max-height: 64px;
+    position: relative;
+    aspect-ratio: 1 / 1;
+  }
+  .pie-wrapper canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+  }
 
   /* ── NOTA BAR & TRACKS ── */
-  .nota-bar-row { margin-bottom: 11px; }
+  .nota-bar-row { margin-bottom: 10px; }
   .nota-bar-row:last-child { margin-bottom: 0; }
   .nota-bar-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-  .nota-bar-name { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+  .nota-bar-name { font-size: 11px; color: var(--muted); font-weight: 500; }
   .nota-bar-name span { font-size: 10px; color: var(--muted); opacity: 0.8; margin-left: 3px; }
   .nota-bar-val { font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
   
-  .track { position: relative; height: 6px; border-radius: 3px; background: var(--track-bg); overflow: hidden; margin-bottom: -6px; }
+  .track { position: relative; height: 5px; border-radius: 3px; background: var(--track-bg); overflow: hidden; margin-bottom: -5px; }
   .track-fill { height: 100%; border-radius: 3px; transition: width 0.08s ease; }
-  .nota-bar-track { height: 6px; border-radius: 3px; background: var(--track-bg); overflow: hidden; }
+  .nota-bar-track { height: 5px; border-radius: 3px; background: var(--track-bg); overflow: hidden; }
   .nota-bar-fill { height: 100%; border-radius: 3px; transition: width 0.2s ease; }
 
   /* ── SLIDERS ── */
   input[type=range] {
     display: block;
     width: 100%;
-    height: 18px;
+    height: 16px;
     opacity: 0;
     cursor: pointer;
     position: relative;
     z-index: 2;
-    margin-top: -6px;
+    margin-top: -5px;
     margin-bottom: 0;
     touch-action: pan-y;
   }
@@ -160,10 +178,10 @@
   .section-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
 
   /* ── BUTTONS ── */
-  .btn-group { display: flex; gap: 5px; flex-wrap: wrap; }
+  .btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
   .btn {
-    padding: 4px 9px;
-    border-radius: 6px;
+    padding: 3px 7px;
+    border-radius: 5px;
     border: 1px solid var(--border);
     background: var(--surface);
     color: var(--muted);
@@ -179,12 +197,12 @@
   .btn.active { background: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 700; }
 
   /* ── TP / TT GRIDS ── */
-  .tp-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .tp-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
   .tp-btn {
-    min-width: 28px;
-    height: 24px;
-    padding: 0 6px;
-    border-radius: 6px;
+    min-width: 25px;
+    height: 22px;
+    padding: 0 4px;
+    border-radius: 5px;
     border: 1px solid var(--border);
     background: var(--surface);
     color: var(--muted);
@@ -201,27 +219,13 @@
   .tp-btn:hover { border-color: var(--muted); }
   .tp-btn.active { background: var(--accent); border-color: var(--accent); color: #ffffff; }
   .tp-desempeno-block {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     background: rgba(125, 125, 125, 0.04);
-    padding: 6px 8px;
+    padding: 5px 7px;
     border-radius: 6px;
     border: 1px solid var(--border);
   }
-  .tp-desempeno-label { font-size: 10.5px; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
-
-  /* ── MEDIA QUERIES ── */
-  @media (max-width: 440px) {
-    .card { flex-direction: column; }
-    .card-left { border-right: none; border-bottom: 1px solid var(--border); padding: 14px; }
-    .card-right {
-      width: 100%;
-      flex-direction: row;
-      justify-content: space-between;
-      padding: 10px 16px;
-    }
-    .card-value { font-size: 24px; }
-    .card-pie { width: 48px; height: 48px; }
-  }
+  .tp-desempeno-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -268,7 +272,9 @@
   </div>
   <div class="card-right">
     <div class="card-value" id="val-n1">0.0</div>
-    <canvas id="chartN1" class="card-pie"></canvas>
+    <div class="pie-wrapper">
+      <canvas id="chartN1"></canvas>
+    </div>
   </div>
 </div>
 
@@ -299,7 +305,9 @@
   </div>
   <div class="card-right">
     <div class="card-value" id="val-n2">0.0</div>
-    <canvas id="chartN2" class="card-pie"></canvas>
+    <div class="pie-wrapper">
+      <canvas id="chartN2"></canvas>
+    </div>
   </div>
 </div>
 
@@ -314,7 +322,9 @@
   </div>
   <div class="card-right">
     <div class="card-value" id="val-n3">0.0</div>
-    <canvas id="chartN3" class="card-pie"></canvas>
+    <div class="pie-wrapper">
+      <canvas id="chartN3"></canvas>
+    </div>
   </div>
 </div>
 
@@ -345,8 +355,10 @@
     </div>
   </div>
   <div class="card-right">
-    <div class="card-value" id="lbl-final" style="font-size:clamp(28px, 6vw, 36px)">0.0</div>
-    <canvas id="chartFinal" class="card-pie"></canvas>
+    <div class="card-value" id="lbl-final" style="font-size:32px">0.0</div>
+    <div class="pie-wrapper">
+      <canvas id="chartFinal"></canvas>
+    </div>
   </div>
 </div>
 
@@ -435,7 +447,7 @@ function makeDonut(id, data, colors, cutout = "70%") {
       plugins: { legend: { display: false }, tooltip: { enabled: false } },
       animation: { duration: 150 },
       responsive: true,
-      maintainAspectRatio: true
+      maintainAspectRatio: false
     }
   });
 }
