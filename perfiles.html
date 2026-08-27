@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Perfiles · Oficina Técnica I</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f3f4f8; --surface: #ffffff; --card: #fafafc;
+    --text: #0f172a; --muted: #64748b; --border: #e2e8f0;
+    --track-bg: #e2e8f0; --accent: #4f46e5;
+    --green: #047857; --yellow: #b45309; --red: #b91c1c;
+    --col-n1: #4f46e5; --col-n2: #ea580c; --col-n3: #059669;
+    --c-asist: #0284c7; --c-epp: #9333ea; --c-partic: #0d9488;
+    --c-tt: #d97706; --c-examen: #e11d48; --c-tp: #059669;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #090a0f; --surface: #12141c; --card: #181b26;
+      --text: #f8fafc; --muted: #94a3b8; --border: #282d3f;
+      --track-bg: #222738; --accent: #818cf8;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --col-n1: #818cf8; --col-n2: #fb923c; --col-n3: #34d399;
+      --c-asist: #38bdf8; --c-epp: #c084fc; --c-partic: #2dd4bf;
+      --c-tt: #fde047; --c-examen: #fb7185; --c-tp: #34d399;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 13px; font-weight: 400; line-height: 1.4;
+    padding: clamp(16px,4vw,32px) clamp(12px,3vw,24px) 56px;
+    max-width: 540px; margin: 0 auto;
+  }
+  @media (min-width: 900px) {
+    body { max-width: 100%; padding: 32px 48px 56px; }
+    .grid { display: grid; grid-template-columns: 260px 1fr; gap: 24px; align-items: start; }
+    .sidebar { position: sticky; top: 20px; }
+  }
+
+  header { margin-bottom: 20px; }
+  header .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 2px; }
+  header h1 { font-size: clamp(18px,4vw,22px); font-weight: 700; color: var(--text); letter-spacing: -0.3px; margin-bottom: 4px; }
+  header .sub { font-size: 12px; color: var(--muted); }
+
+  /* ── SELECTOR ── */
+  .selector-card {
+    background: var(--surface); border-radius: 14px;
+    border: 1px solid var(--border); padding: 16px; margin-bottom: 16px;
+  }
+  .selector-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 10px; }
+  .group-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .group-tab {
+    padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); font-size: 12px; font-family: inherit;
+    cursor: pointer; transition: all 0.12s; font-weight: 500;
+  }
+  .group-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+  .student-list { display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto; }
+  .student-btn {
+    padding: 8px 12px; border-radius: 8px; border: 1px solid transparent;
+    background: transparent; color: var(--text); font-size: 13px;
+    font-family: inherit; cursor: pointer; text-align: left;
+    transition: all 0.1s; display: flex; justify-content: space-between; align-items: center;
+  }
+  .student-btn:hover { background: var(--card); border-color: var(--border); }
+  .student-btn.active { background: var(--card); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .student-nota { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ── LOADING / EMPTY ── */
+  .state-msg {
+    text-align: center; padding: 48px 20px;
+    font-size: 13px; color: var(--muted);
+  }
+  .spinner {
+    width: 28px; height: 28px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.7s linear infinite; margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── PERFIL ── */
+  .perfil { display: none; }
+  .perfil.visible { display: block; }
+
+  .perfil-header {
+    background: var(--surface); border-radius: 14px;
+    border: 1px solid var(--border); padding: 18px; margin-bottom: 12px;
+  }
+  .perfil-name { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .perfil-group { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .perfil-nota-final {
+    font-size: 42px; font-weight: 700; line-height: 1;
+    font-variant-numeric: tabular-nums; margin-top: 8px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card); border-radius: 12px;
+    border: 1px solid var(--border); margin-bottom: 10px;
+    display: flex; overflow: hidden;
+  }
+  .card-left {
+    flex: 1; padding: 14px; border-right: 1px solid var(--border);
+    min-width: 0; display: flex; flex-direction: column; justify-content: center;
+  }
+  .card-right {
+    width: 100px; flex-shrink: 0; background: var(--surface);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 12px 6px; gap: 6px;
+  }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .card-value { font-size: 28px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; text-align: center; }
+  .pie-wrapper {
+    width: 60px; height: 60px; min-width: 60px; min-height: 60px;
+    max-width: 60px; max-height: 60px; position: relative; aspect-ratio: 1/1;
+  }
+  .pie-wrapper canvas { position: absolute; top:0; left:0; width:100%!important; height:100%!important; }
+
+  /* ── BARS ── */
+  .nota-bar-row { margin-bottom: 8px; }
+  .nota-bar-row:last-child { margin-bottom: 0; }
+  .nota-bar-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; }
+  .nota-bar-name { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .nota-bar-name span { font-size: 10px; opacity: 0.8; margin-left: 3px; }
+  .nota-bar-val { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .nota-bar-track { height: 5px; border-radius: 3px; background: var(--track-bg); overflow: hidden; }
+  .nota-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+
+  /* ── FINAL CARD ── */
+  .final-card {
+    background: var(--surface); border-radius: 12px;
+    border: 1px solid var(--border); margin-bottom: 10px;
+    display: flex; overflow: hidden;
+  }
+  .final-left { flex: 1; padding: 14px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
+  .final-right {
+    width: 100px; flex-shrink: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 12px 6px; gap: 6px;
+  }
+
+  /* ── DETALLE DIARIO ── */
+  .detalle-card {
+    background: var(--card); border-radius: 12px;
+    border: 1px solid var(--border); padding: 14px; margin-bottom: 10px;
+  }
+  .detalle-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .dias-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+  .dia-chip {
+    padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 700;
+    border: 1px solid var(--border); background: var(--surface);
+  }
+  .dia-chip.P { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+  .dia-chip.T, .dia-chip.R { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
+  .dia-chip.A { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+  @media (prefers-color-scheme: dark) {
+    .dia-chip.P { background: #052e16; color: #4ade80; border-color: #166534; }
+    .dia-chip.T, .dia-chip.R { background: #1c1600; color: #fde047; border-color: #713f12; }
+    .dia-chip.A { background: #1c0000; color: #f87171; border-color: #7f1d1d; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">Oficina Técnica I · 2026</div>
+  <h1>Perfiles de Estudiantes</h1>
+  <p class="sub">Docente: Silva Sergio Marcelo</p>
+</header>
+
+<div class="grid">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="selector-card">
+      <div class="selector-label">Grupo</div>
+      <div class="group-tabs">
+        <button class="group-tab active" onclick="selectGroup('LM')">Lunes y Miércoles</button>
+        <button class="group-tab" onclick="selectGroup('MJ')">Martes y Jueves</button>
+      </div>
+      <div class="selector-label">Estudiante</div>
+      <div class="student-list" id="student-list">
+        <div class="state-msg"><div class="spinner"></div>Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERFIL -->
+  <div>
+    <div id="perfil-empty" class="state-msg">
+      <div style="font-size:32px;margin-bottom:8px">👈</div>
+      Seleccioná un estudiante para ver su perfil.
+    </div>
+
+    <div id="perfil" class="perfil">
+      <!-- Header -->
+      <div class="perfil-header">
+        <div class="perfil-group" id="p-group"></div>
+        <div class="perfil-name" id="p-name"></div>
+        <div class="perfil-nota-final" id="p-final">—</div>
+      </div>
+
+      <!-- Nota Final -->
+      <div class="final-card">
+        <div class="final-left">
+          <div class="card-title" style="margin-bottom:10px">Nota Final</div>
+          <div class="nota-bar-row">
+            <div class="nota-bar-header">
+              <span class="nota-bar-name">Compromiso <span>33%</span></span>
+              <span class="nota-bar-val" id="p-lbl-n1" style="color:var(--col-n1)">—</span>
+            </div>
+            <div class="nota-bar-track"><div class="nota-bar-fill" id="p-bar-n1" style="background:var(--col-n1)"></div></div>
+          </div>
+          <div class="nota-bar-row">
+            <div class="nota-bar-header">
+              <span class="nota-bar-name">Teoría <span>33%</span></span>
+              <span class="nota-bar-val" id="p-lbl-n2" style="color:var(--col-n2)">—</span>
+            </div>
+            <div class="nota-bar-track"><div class="nota-bar-fill" id="p-bar-n2" style="background:var(--col-n2)"></div></div>
+          </div>
+          <div class="nota-bar-row">
+            <div class="nota-bar-header">
+              <span class="nota-bar-name">Práctica <span>33%</span></span>
+              <span class="nota-bar-val" id="p-lbl-n3" style="color:var(--col-n3)">—</span>
+            </div>
+            <div class="nota-bar-track"><div class="nota-bar-fill" id="p-bar-n3" style="background:var(--col-n3)"></div></div>
+          </div>
+        </div>
+        <div class="final-right">
+          <div class="card-value" id="p-final-r" style="font-size:32px">—</div>
+          <div class="pie-wrapper"><canvas id="p-chartFinal"></canvas></div>
+        </div>
+      </div>
+
+      <!-- N1 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="card-title">Nota 1: Compromiso</div>
+          <div class="nota-bar-row">
+            <div class="nota-bar-header">
+              <span class="nota-bar-name">Asistencia <span>20%</span></span>
+              <span class="nota-bar-val" id="p-asist-val" style="color:var(--c-asist)">—</span>
+            </div>
+            <div class="nota-bar-track"><div class="nota-bar-fill" id="p-asist-bar" style="background:var(--c-asist)"></div></div>
+          </div>
+          <div class="nota-bar-row">
+            <div class="nota-bar-header">
+              <span class="nota-bar-name">EPP <span>20%</span></span>
+              <span class="nota-bar-val" id="p-epp-val" style="color:var(--c-epp)">—</span>
+            </div>
+            <div class="nota-bar-track"><div class="nota-bar-fill" id="p-epp-bar" style="background:var(--c-epp)"></div></div>
+          </div>
+          <div class="nota-bar-row">
+            <div class="nota-bar-header">
+              <span class="nota-bar-name">Participación <span>60%</span></span>
+              <span class="nota-bar-val" id="p-partic-val" style="color:var(--c-partic)">—</span>
+            </div>
+            <div class="nota-bar-track"><div class="nota-bar-fill" id="p-partic-bar" style="background:var(--c-partic)"></div></div>
+          </div>
+        </div>
+        <div class="card-right">
+          <div class="card-value" id="p-n1">—</div>
+          <div class="pie-wrapper"><canvas id="p-chartN1"></canvas></div>
+        </div>
+      </div>
+
+      <!-- N2 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="card-title">Nota 2: Teoría</div>
+          <div class="nota-bar-row">
+            <div class="nota-bar-header">
+              <span class="nota-bar-name">Entregas <span>30%</span></span>
+              <span class="nota-bar-val" id="p-tt-val" style="color:var(--c-tt)">—</span>
+            </div>
+            <div class="nota-bar-track"><div class="nota-bar-fill" id="p-tt-bar" style="background:var(--c-tt)"></div></div>
+          </div>
+          <div class="nota-bar-row">
+            <div class="nota-bar-header">
+              <span class="nota-bar-name">Examen <span>70%</span></span>
+              <span class="nota-bar-val" id="p-ex-val" style="color:var(--c-examen)">—</span>
+            </div>
+            <div class="nota-bar-track"><div class="nota-bar-fill" id="p-ex-bar" style="background:var(--c-examen)"></div></div>
+          </div>
+        </div>
+        <div class="card-right">
+          <div class="card-value" id="p-n2">—</div>
+          <div class="pie-wrapper"><canvas id="p-chartN2"></canvas></div>
+        </div>
+      </div>
+
+      <!-- N3 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="card-title">Nota 3: Práctica</div>
+          <div id="p-tp-bars"></div>
+        </div>
+        <div class="card-right">
+          <div class="card-value" id="p-n3">—</div>
+          <div class="pie-wrapper"><canvas id="p-chartN3"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Detalle de asistencia -->
+      <div class="detalle-card">
+        <div class="detalle-title">Asistencia diaria</div>
+        <div class="dias-grid" id="p-dias"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID = '1Je74PUHDnXV20TzegR-WTi1Y8Quhq-iH5SM_pS-1nOI';
+const BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
+
+const el = id => document.getElementById(id);
+const fmt = n => (n === null || n === undefined) ? '—' : (Math.abs(n - 10) < 1e-6 ? '10' : Number(n).toFixed(1));
+const dark = () => window.matchMedia('(prefers-color-scheme:dark)').matches;
+const emptyColor = () => dark() ? '#282d3f' : '#e2e8f0';
+const gradeColor = n => !n && n !== 0 ? (dark()?'#94a3b8':'#64748b') : n >= 7 ? (dark()?'#34d399':'#047857') : n >= 5 ? (dark()?'#fbbf24':'#b45309') : (dark()?'#f87171':'#b91c1c');
+
+const PALETTES = {
+  light: { n1:'#4f46e5',n2:'#ea580c',n3:'#059669',asist:'#0284c7',epp:'#9333ea',partic:'#0d9488',tt:'#d97706',examen:'#e11d48',tp:'#059669' },
+  dark:  { n1:'#818cf8',n2:'#fb923c',n3:'#34d399',asist:'#38bdf8',epp:'#c084fc',partic:'#2dd4bf',tt:'#fde047',examen:'#fb7185',tp:'#34d399' }
+};
+const pal = () => PALETTES[dark()?'dark':'light'];
+
+// Charts
+let charts = {};
+function makeDonut(id, data, colors, cutout='70%') {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(el(id).getContext('2d'), {
+    type: 'doughnut',
+    data: { datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 0 }] },
+    options: { cutout, plugins:{legend:{display:false},tooltip:{enabled:false}}, animation:{duration:300}, responsive:true, maintainAspectRatio:false }
+  });
+}
+
+// ── DATA ──
+let currentGroup = 'LM';
+let allStudents = { LM: [], MJ: [] };
+let selectedIdx = null;
+
+async function fetchSheet(groupSuffix) {
+  const sheetName = encodeURIComponent(`3er Bimestre (${groupSuffix})`);
+  const url = `${BASE}${sheetName}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+  return json.table.rows;
+}
+
+function parseStudents(rows, groupLabel) {
+  const students = [];
+  // Headers on row index 0 (fila 21), data starts row index 1 (fila 22 = días), then pairs from index 2
+  // Each student occupies 2 rows: row[i] = data, row[i+1] = EPP
+  // Col indices (0-based from col A=0):
+  // B=1: nombre, col 31=AF=ASIST, col32=AG=EPP, col33=AH=N1
+  // col34-37=AI-AL=TTs, col38=AM=EXAMEN, col39=AN=N2
+  // col40-47=AO-AV=TPs, col48=AW=N3, col49=AX=NOTA FINAL
+
+  for (let i = 2; i < rows.length; i += 2) {
+    const r = rows[i];
+    const r2 = rows[i + 1];
+    if (!r) continue;
+    const cv = c => r.c[c] ? r.c[c].v : null;
+    const nombre = cv(1);
+    if (!nombre || typeof nombre !== 'string') continue;
+
+    // Asistencia diaria: columnas impares de col 3 en adelante (hasta col 29)
+    const diasAsist = [];
+    const diasFechas = [];
+    // Días están en cols 3,5,7,9,11,13,15,17,19,21,23,25,27,29 (col index)
+    for (let c = 3; c <= 29; c += 2) {
+      const v = cv(c);
+      if (v && v !== '-') {
+        diasAsist.push(v);
+      }
+    }
+
+    const asist = cv(31);
+    const epp   = cv(32);
+    const n1    = cv(33);
+    const tts   = [cv(34), cv(35), cv(36), cv(37)];
+    const examen = cv(38);
+    const n2    = cv(39);
+    const tps   = [cv(40),cv(41),cv(42),cv(43),cv(44),cv(45),cv(46),cv(47)];
+    const n3    = cv(48);
+    const nf    = cv(49);
+
+    // EPP: fila par, mismas columnas impares
+    let eppTicks = 0, eppTotal = 0;
+    if (r2) {
+      for (let c = 3; c <= 29; c += 2) {
+        const v = r2.c[c] ? r2.c[c].v : null;
+        if (v === '✓') { eppTicks++; eppTotal++; }
+        else if (v === '✗') { eppTotal++; }
+      }
+    }
+    const eppPct = eppTotal > 0 ? eppTicks / eppTotal : null;
+
+    students.push({ nombre, group: groupLabel, asist, epp, eppPct, n1, tts, examen, n2, tps, n3, nf, diasAsist });
+  }
+  return students;
+}
+
+async function loadGroup(suffix) {
+  if (allStudents[suffix].length > 0) return;
+  try {
+    const rows = await fetchSheet(suffix);
+    const label = suffix === 'LM' ? 'Lunes y Miércoles' : 'Martes y Jueves';
+    allStudents[suffix] = parseStudents(rows, label);
+  } catch(e) {
+    console.error(e);
+    allStudents[suffix] = [];
+  }
+}
+
+function renderList() {
+  const list = el('student-list');
+  const students = allStudents[currentGroup];
+  if (!students.length) {
+    list.innerHTML = '<div class="state-msg">No se pudieron cargar los datos.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  students.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'student-btn' + (i === selectedIdx ? ' active' : '');
+    const gc = gradeColor(s.nf);
+    btn.innerHTML = `<span>${s.nombre}</span><span class="student-nota" style="color:${gc}">${fmt(s.nf)}</span>`;
+    btn.onclick = () => showProfile(i);
+    list.appendChild(btn);
+  });
+}
+
+function showProfile(idx) {
+  selectedIdx = idx;
+  const s = allStudents[currentGroup][idx];
+  const p = pal();
+  const ec = emptyColor();
+
+  // Update list active state
+  document.querySelectorAll('.student-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+
+  el('perfil-empty').style.display = 'none';
+  el('perfil').classList.add('visible');
+
+  // Header
+  el('p-group').textContent = s.group;
+  el('p-name').textContent = s.nombre;
+  const fc = gradeColor(s.nf);
+  el('p-final').textContent = fmt(s.nf);
+  el('p-final').style.color = fc;
+  el('p-final-r').textContent = fmt(s.nf);
+  el('p-final-r').style.color = fc;
+
+  // Final bars
+  const n1 = s.n1 || 0, n2 = s.n2 || 0, n3 = s.n3 || 0, nf = s.nf || 0;
+  el('p-lbl-n1').textContent = fmt(n1);
+  el('p-lbl-n2').textContent = fmt(n2);
+  el('p-lbl-n3').textContent = fmt(n3);
+  el('p-bar-n1').style.width = `${n1*10}%`;
+  el('p-bar-n2').style.width = `${n2*10}%`;
+  el('p-bar-n3').style.width = `${n3*10}%`;
+  makeDonut('p-chartFinal',
+    [+(n1/3).toFixed(2), +(n2/3).toFixed(2), +(n3/3).toFixed(2), Math.max(0,10-n1/3-n2/3-n3/3)],
+    [p.n1, p.n2, p.n3, ec], '65%');
+
+  // N1
+  const asistVal = s.asist || 0;
+  const eppVal = s.eppPct !== null ? s.eppPct * 10 : 0;
+  const particVal = n1 - asistVal*0.2 - eppVal*0.2; // aproximación visual
+  el('p-asist-val').textContent = fmt(asistVal);
+  el('p-asist-bar').style.width = `${asistVal*10}%`;
+  el('p-epp-val').textContent = s.eppPct !== null ? `${Math.round(s.eppPct*100)}%` : '—';
+  el('p-epp-bar').style.width = s.eppPct !== null ? `${s.eppPct*100}%` : '0%';
+  el('p-partic-val').textContent = fmt(n1);
+  el('p-partic-bar').style.width = `${n1*10}%`;
+  el('p-n1').textContent = fmt(n1);
+  el('p-n1').style.color = gradeColor(n1);
+  const aA = asistVal*0.2, aE = eppVal*0.2, aP = Math.max(0, n1 - aA - aE);
+  makeDonut('p-chartN1', [aA, aE, aP, Math.max(0,10-aA-aE-aP)], [p.asist, p.epp, p.partic, ec]);
+
+  // N2
+  const ttNums = s.tts.filter(v => v !== null && v !== undefined);
+  const ttProm = ttNums.length ? ttNums.reduce((a,b)=>a+b,0)/4 : 0;
+  const exVal = s.examen || 0;
+  el('p-tt-val').textContent = fmt(ttProm);
+  el('p-tt-bar').style.width = `${ttProm*10}%`;
+  el('p-ex-val').textContent = fmt(exVal);
+  el('p-ex-bar').style.width = `${exVal*10}%`;
+  el('p-n2').textContent = fmt(n2);
+  el('p-n2').style.color = gradeColor(n2);
+  const aTT = ttProm*0.3, aEx = exVal*0.7;
+  makeDonut('p-chartN2', [aTT, aEx, Math.max(0,10-aTT-aEx)], [p.tt, p.examen, ec]);
+
+  // N3
+  const tpBars = el('p-tp-bars');
+  tpBars.innerHTML = '';
+  const tpVals = s.tps.map(v => v || 0);
+  tpVals.forEach((v, i) => {
+    const row = document.createElement('div');
+    row.className = 'nota-bar-row';
+    row.innerHTML = `
+      <div class="nota-bar-header">
+        <span class="nota-bar-name">TP ${i+1} <span>12.5%</span></span>
+        <span class="nota-bar-val" style="color:var(--c-tp)">${v ? fmt(v) : '—'}</span>
+      </div>
+      <div class="nota-bar-track">
+        <div class="nota-bar-fill" style="background:var(--c-tp);width:${v?v*10:0}%"></div>
+      </div>`;
+    tpBars.appendChild(row);
+  });
+  el('p-n3').textContent = fmt(n3);
+  el('p-n3').style.color = gradeColor(n3);
+  const tpAportes = tpVals.map(v => v/8);
+  const sumaTP = tpAportes.reduce((a,b)=>a+b,0);
+  makeDonut('p-chartN3',
+    [...tpAportes, Math.max(0,10-sumaTP)],
+    [...tpVals.map(v => v ? p.tp : ec), ec]);
+
+  // Asistencia diaria
+  const diasDiv = el('p-dias');
+  diasDiv.innerHTML = '';
+  s.diasAsist.forEach(d => {
+    const chip = document.createElement('div');
+    chip.className = `dia-chip ${d}`;
+    chip.textContent = d;
+    diasDiv.appendChild(chip);
+  });
+}
+
+async function selectGroup(suffix) {
+  currentGroup = suffix;
+  selectedIdx = null;
+  el('perfil').classList.remove('visible');
+  el('perfil-empty').style.display = '';
+
+  document.querySelectorAll('.group-tab').forEach(t => t.classList.toggle('active', t.textContent.includes(suffix === 'LM' ? 'Lunes' : 'Martes')));
+
+  el('student-list').innerHTML = '<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
+
+  await loadGroup(suffix);
+  renderList();
+}
+
+// Init
+selectGroup('LM');
+</script>
+</body>
+</html>
