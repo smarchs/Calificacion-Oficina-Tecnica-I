@@ -83,6 +83,49 @@
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
+  /* ── DESKTOP LAYOUT ── */
+  @media (min-width: 900px) {
+    body {
+      max-width: 100%;
+      padding: 32px 48px 56px;
+    }
+    header h1 { font-size: 26px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 12px;
+      align-items: start;
+    }
+    .col-notes { display: flex; flex-direction: column; gap: 12px; }
+    .card-final-sticky {
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: 20px;
+    }
+
+    .card-title { font-size: 14px; }
+    .card-value { font-size: 34px; }
+    .nota-bar-name { font-size: 12px; }
+    .nota-bar-name span { font-size: 11px; }
+    .nota-bar-val { font-size: 13px; }
+    .nota-bar-track, .track { height: 6px; }
+    .card-right { width: 120px; }
+    .pie-wrapper { width: 76px; height: 76px; min-width: 76px; min-height: 76px; max-width: 76px; max-height: 76px; }
+    .btn { font-size: 12px; padding: 4px 9px; }
+    .tp-btn { min-width: 28px; height: 25px; font-size: 12px; }
+    .section-label { font-size: 12px; }
+    .tp-desempeno-label { font-size: 11px; }
+  }
+
+  @media (min-width: 1200px) {
+    body { padding: 40px 72px 56px; }
+    .layout { grid-template-columns: 1fr 380px; gap: 16px; }
+    .card-value { font-size: 38px; }
+    header h1 { font-size: 28px; }
+  }
+
   /* ── HEADER ── */
   header { margin-bottom: 18px; }
   header .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 2px; }
@@ -237,6 +280,8 @@
   <p class="sub">Explorá cómo se construye tu nota ajustando cada variable.</p>
 </header>
 
+<div class="layout">
+<div class="col-notes">
 <!-- COMPROMISO -->
 <div class="card">
   <div class="card-left">
@@ -328,8 +373,10 @@
   </div>
 </div>
 
+</div><!-- /col-notes -->
+
 <!-- FINAL CARD -->
-<div class="card" style="background:var(--surface);">
+<div class="card card-final-sticky" style="background:var(--surface);">
   <div class="card-left">
     <div class="card-title">Nota Final</div>
     <div class="nota-bar-row">
@@ -360,343 +407,276 @@
       <canvas id="chartFinal"></canvas>
     </div>
   </div>
-</div>
+</div><!-- /card-final-sticky -->
+</div><!-- /layout -->
 
 <script>
+// ── Utilidades ──
 const roundHalf = n => Math.round(n * 2) / 2;
+// Replica exacta de REDONDEAR() de Excel: redondeo aritmético simétrico
+const excelRound = (n, dec) => {
+  const factor = Math.pow(10, dec);
+  return Math.round((n + Number.EPSILON) * factor) / factor;
+};
 const fmt = n => Math.abs(n - 10) < 1e-6 ? "10" : n.toFixed(1);
 const dark = () => window.matchMedia('(prefers-color-scheme:dark)').matches;
 const emptyColor = () => dark() ? '#282d3f' : '#e2e8f0';
 const gradeColor = n => n >= 7 ? (dark() ? '#34d399' : '#047857') : n >= 5 ? (dark() ? '#fbbf24' : '#b45309') : (dark() ? '#f87171' : '#b91c1c');
+const el = id => document.getElementById(id);
+const sum = arr => arr.reduce((a, b) => a + b, 0);
 
-const PALETTE = {
-  n1: '#4f46e5',
-  n2: '#ea580c',
-  n3: '#059669',
-  asist: '#0284c7',
-  epp: '#9333ea',
-  partic: '#0d9488',
-  tt: '#d97706',
-  examen: '#e11d48',
-  tp: '#059669'
+// ── Paletas (light / dark) ──
+const PALETTES = {
+  light: { n1:'#4f46e5', n2:'#ea580c', n3:'#059669', asist:'#0284c7', epp:'#9333ea', partic:'#0d9488', tt:'#d97706', examen:'#e11d48', tp:'#059669' },
+  dark:  { n1:'#818cf8', n2:'#fb923c', n3:'#34d399', asist:'#38bdf8', epp:'#c084fc', partic:'#2dd4bf', tt:'#fde047', examen:'#fb7185', tp:'#34d399' }
 };
+const pal = () => PALETTES[dark() ? 'dark' : 'light'];
 
-const PALETTE_DARK = {
-  n1: '#818cf8',
-  n2: '#fb923c',
-  n3: '#34d399',
-  asist: '#38bdf8',
-  epp: '#c084fc',
-  partic: '#2dd4bf',
-  tt: '#fde047',
-  examen: '#fb7185',
-  tp: '#34d399'
-};
+// ── Escalas ──
+const PART_SCALE = ["N","I","R","B","MB","E"];
+const TT_SCALE   = ["T4","T3","T2","T1","T"];
+const TP_SCALE   = ["I","R","B","MB","E"];
 
-const getThemePalette = () => dark() ? PALETTE_DARK : PALETTE;
-
-const PART_SCALE = ["N", "I", "R", "B", "MB", "E"];
-const TT_SCALE = ["T4", "T3", "T2", "T1", "T"];
-const TP_SCALE = ["I", "R", "B", "MB", "E"];
-
+// ── Estado ──
 const S = {
-  asist: 0,
-  epp: 0,
-  partic: "N",
-  ttSel: [false, false, false, false],
-  ttDesemp: ["T", "T", "T", "T"],
+  asist: 0, epp: 0, partic: "N",
+  ttSel:   [false,false,false,false],
+  ttDesemp:["T","T","T","T"],
   examen: 0,
-  tpSel: [false, false, false, false, false, false, false, false],
-  tpDesemp: ["B", "B", "B", "B", "B", "B", "B", "B"]
+  tpSel:   Array(8).fill(false),
+  tpDesemp:Array(8).fill("B")
 };
 
+// ── Funciones de ajuste ──
 function adjPartic(v, a) {
-  if (v === "E") return 10;
-  if (v === "MB") return 9;
-  if (v === "B") return a >= 8 ? 8 : 7;
-  if (v === "R") return a >= 6 ? 6 : 5;
-  if (v === "I") return a < 2 ? 1 : a < 3 ? 2 : a < 4 ? 3 : 4;
+  if (v==="E") return 10; if (v==="MB") return 9;
+  if (v==="B") return a>=8?8:7;
+  if (v==="R") return a>=6?6:5;
+  if (v==="I") return a<2?1:a<3?2:a<4?3:4;
   return 0;
 }
-
 function adjTT(v, n1) {
-  if (v === "T") return 10;
-  if (v === "T1") return n1 >= 9 ? 9 : 8;
-  if (v === "T2") return n1 >= 7 ? 7 : 6;
-  if (v === "T3") return n1 >= 5 ? 5 : 4;
-  if (v === "T4") return n1 < 2 ? 1 : n1 < 3 ? 2 : 3;
+  if (v==="T")  return 10;
+  if (v==="T1") return n1>=9?9:8;
+  if (v==="T2") return n1>=7?7:6;
+  if (v==="T3") return n1>=5?5:4;
+  if (v==="T4") return n1<2?1:n1<3?2:3;
   return 0;
 }
-
 function adjTP(v, n1) {
-  if (v === "E") return 10;
-  if (v === "MB") return 9;
-  if (v === "B") return n1 >= 8 ? 8 : 7;
-  if (v === "R") return n1 >= 6 ? 6 : 5;
-  if (v === "I") return n1 < 2 ? 1 : n1 < 3 ? 2 : n1 < 4 ? 3 : 4;
+  if (v==="E") return 10; if (v==="MB") return 9;
+  if (v==="B") return n1>=8?8:7;
+  if (v==="R") return n1>=6?6:5;
+  if (v==="I") return n1<2?1:n1<3?2:n1<4?3:4;
   return 0;
 }
 
-function makeDonut(id, data, colors, cutout = "70%") {
-  const ctx = document.getElementById(id).getContext('2d');
-  return new Chart(ctx, {
+// ── Charts ──
+function makeDonut(id, data, colors, cutout="70%") {
+  return new Chart(el(id).getContext('2d'), {
     type: 'doughnut',
     data: { datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 0 }] },
-    options: {
-      cutout,
-      plugins: { legend: { display: false }, tooltip: { enabled: false } },
-      animation: { duration: 150 },
-      responsive: true,
-      maintainAspectRatio: false
-    }
+    options: { cutout, plugins: { legend:{display:false}, tooltip:{enabled:false} }, animation:{duration:150}, responsive:true, maintainAspectRatio:false }
   });
 }
-
 function upChart(c, data, colors) {
   c.data.datasets[0].data = data;
   if (colors) c.data.datasets[0].backgroundColor = colors;
   c.update();
 }
 
-const cFinal = makeDonut('chartFinal', [0, 0, 0, 10], [PALETTE.n1, PALETTE.n2, PALETTE.n3, emptyColor()], '65%');
-const cN1 = makeDonut('chartN1', [0, 0, 0, 10], [PALETTE.asist, PALETTE.epp, PALETTE.partic, emptyColor()]);
-const cN2 = makeDonut('chartN2', [0, 0, 10], [PALETTE.tt, PALETTE.examen, emptyColor()]);
-const cN3 = makeDonut('chartN3', new Array(9).fill(0), [...new Array(8).fill(PALETTE.tp), emptyColor()]);
+const p0 = PALETTES.light;
+const ec = emptyColor();
+const cFinal = makeDonut('chartFinal', [0,0,0,10], [p0.n1,p0.n2,p0.n3,ec], '65%');
+const cN1    = makeDonut('chartN1',    [0,0,0,10], [p0.asist,p0.epp,p0.partic,ec]);
+const cN2    = makeDonut('chartN2',    [0,0,10],   [p0.tt,p0.examen,ec]);
+const cN3    = makeDonut('chartN3',    Array(9).fill(0), [...Array(8).fill(p0.tp),ec]);
 
-// ── Participación Buttons ──
-const bPartic = document.getElementById('btns-partic');
+// ── Construcción de UI dinámica ──
+
+// Participación
+const bPartic = el('btns-partic');
 PART_SCALE.forEach(s => {
   const b = document.createElement('button');
-  b.className = 'btn' + (s === S.partic ? ' active' : '');
+  b.className = 'btn' + (s===S.partic?' active':'');
   b.textContent = s;
   b.dataset.tag = s;
   b.onclick = () => {
     S.partic = s;
-    bPartic.querySelectorAll('.btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tag === s));
+    bPartic.querySelectorAll('.btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tag===s));
     render();
   };
   bPartic.appendChild(b);
 });
 
-// ── TT Grid ──
-const ttGrid = document.getElementById('tt-grid');
-const ttBlocks = document.getElementById('tt-blocks');
+// Función auxiliar para construir bloques de botones TT/TP
+function buildBtnBlock(container, scale, getActive, onSelect) {
+  const bg = document.createElement('div');
+  bg.className = 'btn-group';
+  scale.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'btn' + (s===getActive()?' active':'');
+    btn.textContent = s;
+    btn.onclick = () => {
+      onSelect(s);
+      bg.querySelectorAll('.btn').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    };
+    bg.appendChild(btn);
+  });
+  container.appendChild(bg);
+  return bg;
+}
+
+// TT Grid
+const ttGrid = el('tt-grid'), ttBlocks = el('tt-blocks');
 for (let i = 0; i < 4; i++) {
   const b = document.createElement('button');
-  b.className = 'tp-btn';
-  b.textContent = i + 1;
-  b.id = `ttb-${i}`;
+  b.className = 'tp-btn'; b.textContent = i+1; b.id = `ttb-${i}`;
   b.onclick = () => {
     S.ttSel[i] = !S.ttSel[i];
     if (S.ttSel[i]) {
       S.ttDesemp[i] = "T";
-      const bg = document.getElementById(`ttd-${i}`).querySelector('.btn-group');
-      if (bg) {
-        bg.querySelectorAll('.btn').forEach(btn => {
-          btn.classList.toggle('active', btn.textContent === "T");
-        });
-      }
+      el(`ttd-${i}`).querySelector('.btn-group')
+        ?.querySelectorAll('.btn')
+        .forEach(btn => btn.classList.toggle('active', btn.textContent==="T"));
     }
     render();
   };
   ttGrid.appendChild(b);
 
   const w = document.createElement('div');
-  w.className = 'tp-desempeno-block';
-  w.id = `ttd-${i}`;
-  w.style.display = 'none';
+  w.className = 'tp-desempeno-block'; w.id = `ttd-${i}`; w.style.display = 'none';
   const l = document.createElement('div');
-  l.className = 'tp-desempeno-label';
-  l.textContent = `TT ${i + 1}: Puntualidad`;
+  l.className = 'tp-desempeno-label'; l.textContent = `TT ${i+1}: Puntualidad`;
   w.appendChild(l);
-  const bg = document.createElement('div');
-  bg.className = 'btn-group';
-  TT_SCALE.forEach(s => {
-    const btn = document.createElement('button');
-    btn.className = 'btn' + (s === S.ttDesemp[i] ? ' active' : '');
-    btn.textContent = s;
-    btn.onclick = () => {
-      S.ttDesemp[i] = s;
-      bg.querySelectorAll('.btn').forEach(x => x.classList.remove('active'));
-      btn.classList.add('active');
-      render();
-    };
-    bg.appendChild(btn);
-  });
-  w.appendChild(bg);
+  buildBtnBlock(w, TT_SCALE, () => S.ttDesemp[i], s => { S.ttDesemp[i] = s; });
   ttBlocks.appendChild(w);
 }
 
-// ── TP Grid ──
-const tpG = document.getElementById('tp-grid');
-const tpD = document.getElementById('tp-desempenos');
+// TP Grid
+const tpG = el('tp-grid'), tpD = el('tp-desempenos');
 for (let i = 0; i < 8; i++) {
   const b = document.createElement('button');
-  b.className = 'tp-btn';
-  b.textContent = i + 1;
-  b.id = `tpb-${i}`;
-  b.onclick = () => {
-    S.tpSel[i] = !S.tpSel[i];
-    render();
-  };
+  b.className = 'tp-btn'; b.textContent = i+1; b.id = `tpb-${i}`;
+  b.onclick = () => { S.tpSel[i] = !S.tpSel[i]; render(); };
   tpG.appendChild(b);
 
   const w = document.createElement('div');
-  w.className = 'tp-desempeno-block';
-  w.id = `tpd-${i}`;
-  w.style.display = 'none';
+  w.className = 'tp-desempeno-block'; w.id = `tpd-${i}`; w.style.display = 'none';
   const l = document.createElement('div');
-  l.className = 'tp-desempeno-label';
-  l.textContent = `TP ${i + 1}: Desempeño`;
+  l.className = 'tp-desempeno-label'; l.textContent = `TP ${i+1}: Desempeño`;
   w.appendChild(l);
-  const bg = document.createElement('div');
-  bg.className = 'btn-group';
-  TP_SCALE.forEach(s => {
-    const btn = document.createElement('button');
-    btn.className = 'btn' + (s === S.tpDesemp[i] ? ' active' : '');
-    btn.textContent = s;
-    btn.onclick = () => {
-      S.tpDesemp[i] = s;
-      bg.querySelectorAll('.btn').forEach(x => x.classList.remove('active'));
-      btn.classList.add('active');
-      render();
-    };
-    bg.appendChild(btn);
-  });
-  w.appendChild(bg);
+  buildBtnBlock(w, TP_SCALE, () => S.tpDesemp[i], s => { S.tpDesemp[i] = s; });
   tpD.appendChild(w);
 }
 
-// ── 8 barras fijas de TPs ──
-const tpBarsContainer = document.getElementById('tp-bars');
+// Barras de TPs
+const tpBarsContainer = el('tp-bars');
 for (let i = 0; i < 8; i++) {
   const row = document.createElement('div');
   row.className = 'nota-bar-row';
-  row.id = `row-tp-${i}`;
   row.innerHTML = `
     <div class="nota-bar-header">
-      <span class="nota-bar-name">TP ${i + 1} <span>12.5%</span></span>
+      <span class="nota-bar-name">TP ${i+1} <span>12.5%</span></span>
       <span class="nota-bar-val"><span id="lbl-tp-val-${i}">0.0</span> <span id="lbl-tp-ap-${i}" style="opacity:0.6;font-weight:400">(+0.00)</span></span>
     </div>
-    <div class="nota-bar-track">
-      <div class="nota-bar-fill" id="fill-tp-${i}" style="background:var(--c-tp);width:0%"></div>
-    </div>
-  `;
+    <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-tp-${i}" style="background:var(--c-tp);width:0%"></div></div>`;
   tpBarsContainer.appendChild(row);
 }
 
-document.getElementById('sl-asist').oninput = e => { S.asist = +e.target.value; render(); };
-document.getElementById('sl-epp').oninput = e => { S.epp = +e.target.value; render(); };
-document.getElementById('sl-examen').oninput = e => { S.examen = parseFloat(e.target.value); render(); };
+// Sliders
+el('sl-asist').oninput  = e => { S.asist  = +e.target.value; render(); };
+el('sl-epp').oninput    = e => { S.epp    = +e.target.value; render(); };
+el('sl-examen').oninput = e => { S.examen = +e.target.value; render(); };
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 
+// ── Render ──
 function render() {
-  const pal = getThemePalette();
-  const bgEmpty = emptyColor();
+  const p = pal(), bgEmpty = emptyColor();
 
-  // 1. Nota 1: Compromiso
-  const asistDecimal = S.asist / 10;
-  const eppDecimal = S.epp / 10;
-  const pAj = adjPartic(S.partic, asistDecimal);
-  const aAsist = +(asistDecimal * 0.2).toFixed(2);
-  const aEpp = +(eppDecimal * 0.2).toFixed(2);
-  const aPartic = +(pAj * 0.6).toFixed(2);
-  const n1 = +(aAsist + aEpp + aPartic).toFixed(1);
+  // ── CÁLCULOS — sin redondeo en componentes, solo en n1/n2/n3/nf ──
 
-  // 2. Nota 2: Teoría (recalculada por N1)
-  const ttNums = S.ttDesemp.map((d, i) => S.ttSel[i] ? adjTT(d, n1) : 0);
-  const ttProm = +(ttNums.reduce((a, b) => a + b, 0) / 4).toFixed(1);
-  const aTT = +(ttProm * 0.3).toFixed(2);
-  const aEx = +(S.examen * 0.7).toFixed(2);
-  const n2 = +(aTT + aEx).toFixed(1);
+  // Nota 1
+  const asistDec = S.asist / 10;
+  const pAj      = adjPartic(S.partic, asistDec);
+  const aAsist   = asistDec * 0.2;
+  const aEpp     = (S.epp / 10) * 0.2;
+  const aPartic  = pAj * 0.6;
+  const n1       = excelRound(aAsist + aEpp + aPartic, 1);
 
-  // 3. Nota 3: Práctica (recalculada por N1)
-  const tpNums = S.tpDesemp.map((d, i) => S.tpSel[i] ? adjTP(d, n1) : 0);
-  const tpAportes = tpNums.map(v => +(v / 8).toFixed(2));
-  const n3 = +(tpNums.reduce((a, b) => a + b, 0) / 8).toFixed(1);
+  // Nota 2
+  const ttNums = S.ttDesemp.map((d,i) => S.ttSel[i] ? adjTT(d,n1) : 0);
+  const ttProm = sum(ttNums) / 4;
+  const aTT    = ttProm * 0.3;
+  const aEx    = S.examen * 0.7;
+  const n2     = excelRound(aTT + aEx, 1);
 
-  // 4. Nota Final
-  const aN1Final = +(n1 / 3).toFixed(2);
-  const aN2Final = +(n2 / 3).toFixed(2);
-  const aN3Final = +(n3 / 3).toFixed(2);
-  const nf = roundHalf((n1 + n2 + n3) / 3);
+  // Nota 3
+  const tpNums    = S.tpDesemp.map((d,i) => S.tpSel[i] ? adjTP(d,n1) : 0);
+  const n3        = excelRound(sum(tpNums) / 8, 1);
+  const tpAportes = tpNums.map(v => v / 8);
+
+  // Nota Final
+  const nf = roundHalf((n1+n2+n3)/3);
   const fc = gradeColor(nf);
 
-  // UI: N1
-  document.getElementById('val-n1').textContent = fmt(n1);
-  document.getElementById('val-n1').style.color = gradeColor(n1);
+  // UI N1
+  el('val-n1').textContent   = fmt(n1);
+  el('val-n1').style.color   = gradeColor(n1);
+  el('disp-asist').textContent  = `${S.asist}%`;
+  el('fill-asist').style.width  = `${S.asist}%`;
+  el('aporte-asist').textContent = `(+${aAsist.toFixed(2)})`;
+  el('disp-epp').textContent    = `${S.epp}%`;
+  el('fill-epp').style.width    = `${S.epp}%`;
+  el('aporte-epp').textContent  = `(+${aEpp.toFixed(2)})`;
+  el('disp-partic').textContent  = `${S.partic} (${pAj.toFixed(1)})`;
+  el('fill-partic').style.width  = `${pAj*10}%`;
+  el('aporte-partic').textContent = `(+${aPartic.toFixed(2)})`;
+  upChart(cN1, [aAsist,aEpp,aPartic, Math.max(0, 10-aAsist-aEpp-aPartic)], [p.asist,p.epp,p.partic,bgEmpty]);
 
-  document.getElementById('disp-asist').textContent = `${S.asist}%`;
-  document.getElementById('fill-asist').style.width = `${S.asist}%`;
-  document.getElementById('aporte-asist').textContent = `(+${aAsist.toFixed(2)})`;
-
-  document.getElementById('disp-epp').textContent = `${S.epp}%`;
-  document.getElementById('fill-epp').style.width = `${S.epp}%`;
-  document.getElementById('aporte-epp').textContent = `(+${aEpp.toFixed(2)})`;
-
-  document.getElementById('disp-partic').textContent = `${S.partic} (${pAj.toFixed(1)})`;
-  document.getElementById('fill-partic').style.width = `${pAj * 10}%`;
-  document.getElementById('aporte-partic').textContent = `(+${aPartic.toFixed(2)})`;
-
-  const vacioN1 = Math.max(0, +(10 - (aAsist + aEpp + aPartic)).toFixed(2));
-  upChart(cN1, [aAsist, aEpp, aPartic, vacioN1], [pal.asist, pal.epp, pal.partic, bgEmpty]);
-
-  // UI: N2
-  document.getElementById('val-n2').textContent = fmt(n2);
-  document.getElementById('val-n2').style.color = gradeColor(n2);
-  document.getElementById('disp-examen').textContent = S.examen.toFixed(1);
-  document.getElementById('fill-examen').style.width = `${S.examen * 10}%`;
-  for (let i = 0; i < 4; i++) {
-    document.getElementById(`ttb-${i}`).classList.toggle('active', S.ttSel[i]);
-    document.getElementById(`ttd-${i}`).style.display = S.ttSel[i] ? 'block' : 'none';
+  // UI N2
+  el('val-n2').textContent   = fmt(n2);
+  el('val-n2').style.color   = gradeColor(n2);
+  el('disp-examen').textContent = S.examen.toFixed(1);
+  el('fill-examen').style.width = `${S.examen*10}%`;
+  el('seg-tt').textContent   = fmt(ttProm);
+  el('fill-tt').style.width  = `${ttProm*10}%`;
+  el('aporte-tt').textContent    = `(+${aTT.toFixed(2)})`;
+  el('aporte-examen').textContent = `(+${aEx.toFixed(2)})`;
+  for (let i=0; i<4; i++) {
+    el(`ttb-${i}`).classList.toggle('active', S.ttSel[i]);
+    el(`ttd-${i}`).style.display = S.ttSel[i] ? 'block' : 'none';
   }
-  document.getElementById('seg-tt').textContent = fmt(ttProm);
-  document.getElementById('fill-tt').style.width = `${ttProm * 10}%`;
-  document.getElementById('aporte-tt').textContent = `(+${aTT.toFixed(2)})`;
-  document.getElementById('aporte-examen').textContent = `(+${aEx.toFixed(2)})`;
+  upChart(cN2, [aTT,aEx, Math.max(0, 10-aTT-aEx)], [p.tt,p.examen,bgEmpty]);
 
-  const vacioN2 = Math.max(0, +(10 - (aTT + aEx)).toFixed(2));
-  upChart(cN2, [aTT, aEx, vacioN2], [pal.tt, pal.examen, bgEmpty]);
-
-  // UI: N3
-  document.getElementById('val-n3').textContent = fmt(n3);
-  document.getElementById('val-n3').style.color = gradeColor(n3);
-  for (let i = 0; i < 8; i++) {
-    document.getElementById(`tpb-${i}`).classList.toggle('active', S.tpSel[i]);
-    document.getElementById(`tpd-${i}`).style.display = S.tpSel[i] ? 'block' : 'none';
-
-    const valTP = tpNums[i];
-    const apTP = tpAportes[i];
-    const isSel = S.tpSel[i];
-
-    document.getElementById(`lbl-tp-val-${i}`).textContent = isSel ? fmt(valTP) : '0.0';
-    document.getElementById(`lbl-tp-ap-${i}`).textContent = `(+${apTP.toFixed(2)})`;
-    
-    const fillEl = document.getElementById(`fill-tp-${i}`);
-    fillEl.style.width = isSel ? `${valTP * 10}%` : '0%';
-    fillEl.style.background = 'var(--c-tp)';
+  // UI N3
+  el('val-n3').textContent = fmt(n3);
+  el('val-n3').style.color = gradeColor(n3);
+  const sumaTP = sum(tpAportes);
+  for (let i=0; i<8; i++) {
+    el(`tpb-${i}`).classList.toggle('active', S.tpSel[i]);
+    el(`tpd-${i}`).style.display = S.tpSel[i] ? 'block' : 'none';
+    el(`lbl-tp-val-${i}`).textContent = S.tpSel[i] ? fmt(tpNums[i]) : '0.0';
+    el(`lbl-tp-ap-${i}`).textContent  = `(+${(tpNums[i]/8).toFixed(2)})`;
+    el(`fill-tp-${i}`).style.width    = S.tpSel[i] ? `${tpNums[i]*10}%` : '0%';
   }
+  upChart(cN3, [...tpAportes, Math.max(0, 10-sumaTP)],
+               [...tpNums.map((_,i) => S.tpSel[i]?p.tp:bgEmpty), bgEmpty]);
 
-  const sumaAportesTP = tpAportes.reduce((acc, cur) => acc + cur, 0);
-  const vacioN3 = Math.max(0, +(10 - sumaAportesTP).toFixed(2));
-  const tpColors = tpNums.map((v, i) => S.tpSel[i] ? pal.tp : bgEmpty);
-  upChart(cN3, [...tpAportes, vacioN3], [...tpColors, bgEmpty]);
-
-  // UI: Final
-  document.getElementById('lbl-n1').textContent = fmt(n1);
-  document.getElementById('lbl-n2').textContent = fmt(n2);
-  document.getElementById('lbl-n3').textContent = fmt(n3);
-  document.getElementById('bar-n1').style.width = `${n1 * 10}%`;
-  document.getElementById('bar-n2').style.width = `${n2 * 10}%`;
-  document.getElementById('bar-n3').style.width = `${n3 * 10}%`;
-  const lf = document.getElementById('lbl-final');
-  lf.textContent = fmt(nf);
-  lf.style.color = fc;
-
-  const sumaAportesFinal = +(aN1Final + aN2Final + aN3Final).toFixed(2);
-  const vacioFinal = Math.max(0, +(10 - sumaAportesFinal).toFixed(2));
-  upChart(cFinal, [aN1Final, aN2Final, aN3Final, vacioFinal], [pal.n1, pal.n2, pal.n3, bgEmpty]);
+  // UI Final
+  el('lbl-n1').textContent   = fmt(n1);
+  el('lbl-n2').textContent   = fmt(n2);
+  el('lbl-n3').textContent   = fmt(n3);
+  el('bar-n1').style.width   = `${n1*10}%`;
+  el('bar-n2').style.width   = `${n2*10}%`;
+  el('bar-n3').style.width   = `${n3*10}%`;
+  el('lbl-final').textContent = fmt(nf);
+  el('lbl-final').style.color = fc;
+  const aN1=+(n1/3).toFixed(2), aN2=+(n2/3).toFixed(2), aN3=+(n3/3).toFixed(2);
+  upChart(cFinal, [aN1,aN2,aN3, Math.max(0,+(10-aN1-aN2-aN3).toFixed(2))], [p.n1,p.n2,p.n3,bgEmpty]);
 }
 
 render();
