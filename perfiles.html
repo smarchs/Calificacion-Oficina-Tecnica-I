@@ -311,6 +311,7 @@ const dark = () => window.matchMedia('(prefers-color-scheme:dark)').matches;
 const emptyColor = () => dark() ? '#282d3f' : '#e2e8f0';
 const gradeColor = n => (!n&&n!==0) ? (dark()?'#94a3b8':'#94a3b8') : n>=7 ? (dark()?'#34d399':'#047857') : n>=5 ? (dark()?'#fbbf24':'#b45309') : (dark()?'#f87171':'#b91c1c');
 const sum = arr => arr.reduce((a,b)=>a+b,0);
+const nv = v => (v===null||v===undefined) ? null : Number(v);
 
 const PALETTES = {
   light: {n1:'#4f46e5',n2:'#ea580c',n3:'#059669',asist:'#0284c7',epp:'#9333ea',partic:'#0d9488',tt:'#d97706',examen:'#e11d48',tp:'#059669'},
@@ -318,8 +319,32 @@ const PALETTES = {
 };
 const pal = () => PALETTES[dark()?'dark':'light'];
 
-const PART_SCALE = ["N","I","R","B","MB","E"];
-const TT_LABELS  = {T:"A tiempo",T1:"1 clase tarde",T2:"2 clases tarde",T3:"3 clases tarde",T4:"4 clases tarde",N:"No entregado"};
+// Mapeo de texto TT → número (usando N1 como referencia aproximada)
+function ttTextToNum(txt, n1) {
+  if (!txt || txt==='N') return 0;
+  if (txt==='T')  return 10;
+  if (txt==='T1') return n1>=9?9:8;
+  if (txt==='T2') return n1>=7?7:6;
+  if (txt==='T3') return n1>=5?5:4;
+  if (txt==='T4') return n1<2?1:n1<3?2:3;
+  // Si ya es número (gviz a veces devuelve el valor calculado)
+  const num = parseFloat(txt);
+  return isNaN(num) ? 0 : num;
+}
+
+// Mapeo de texto TP → número (usando N1)
+function tpTextToNum(txt, n1) {
+  if (!txt || txt==='N') return 0;
+  if (txt==='E')  return 10;
+  if (txt==='MB') return 9;
+  if (txt==='B')  return n1>=8?8:7;
+  if (txt==='R')  return n1>=6?6:5;
+  if (txt==='I')  return n1<2?1:n1<3?2:n1<4?3:4;
+  const num = parseFloat(txt);
+  return isNaN(num) ? 0 : num;
+}
+
+const TT_LABELS = {T:"A tiempo",T1:"1 clase tarde",T2:"2 clases tarde",T3:"3 clases tarde",T4:"4 clases tarde",N:"No entregado"};
 
 // ── CHARTS ──
 let charts = {};
@@ -347,54 +372,92 @@ async function fetchSheet(suffix) {
 
 function parseStudents(rows) {
   const students = [];
-  // Filas de datos: a partir de fila index 2, de a pares (fila alumno + fila EPP)
-  // Columnas clave (0-based):
-  // 1=Nombre, 3-29 impares=Asistencia/Participación, 31=ASIST, 32=EPP%, 33=N1
-  // 34-37=TTs (valores numéricos), 38=Examen, 39=N2
-  // 40-47=TPs (valores numéricos), 48=N3, 49=Nota Final
-  for (let i = 2; i < rows.length - 1; i += 2) {
+  // Estructura confirmada del xlsx (0-based cols):
+  // Col 1  = Nombre
+  // Col 3,5,7...29 (impares) = Asistencia diaria (P/T/R/A/-)
+  // Col 4,6,8...30 (pares)   = Participación (E/MB/B/R/I/N/-)
+  // Col 31 = ASIST (número calculado)
+  // Col 32 = EPP % (número 0-1, o vacío)
+  // Col 33 = N1 (número calculado)
+  // Col 34-37 = TT1-TT4 (texto: T/T1/T2/T3/T4/N o vacío)
+  // Col 38 = Examen (número)
+  // Col 39 = N2 (número calculado)
+  // Col 40-47 = TP1-TP8 (texto: E/MB/B/R/I/N o vacío)
+  // Col 48 = N3 (número calculado)
+  // Col 49 = NF (número calculado)
+  // Fila 21 (idx 20) = headers, fila 22 (idx 21) = días, datos desde fila 23 (idx 22), de a 2 filas
+
+  for (let i = 2; i < rows.length; i += 2) {
     const r  = rows[i];
     const r2 = rows[i+1];
     if (!r || !r.c) continue;
-    const cv = c => (r.c[c] && r.c[c].v !== null) ? r.c[c].v : null;
+
+    const cv  = c => (r.c[c]  && r.c[c].v  !== null && r.c[c].v  !== undefined) ? r.c[c].v  : null;
+    const cv2 = c => (r2 && r2.c && r2.c[c] && r2.c[c].v !== null) ? r2.c[c].v : null;
+
     const nombre = cv(1);
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') continue;
 
-    // Asistencia diaria (para mostrar)
+    // Notas calculadas directamente de la planilla
+    const asist  = nv(cv(31));
+    const eppRaw = cv(32); // puede ser número 0-1, string '%', o null
+    const n1     = nv(cv(33));
+    const examen = nv(cv(38));
+    const n2     = nv(cv(39));
+    const n3     = nv(cv(48));
+    const nf     = nv(cv(49));
+
+    // EPP: normalizar a 0-1
+    let eppPct = null;
+    if (eppRaw !== null && eppRaw !== '') {
+      const num = parseFloat(String(eppRaw).replace('%',''));
+      if (!isNaN(num)) eppPct = num > 1 ? num/100 : num;
+    }
+
+    // TTs: texto → número usando N1
+    const n1val = n1 || 0;
+    const ttTexts = [cv(34), cv(35), cv(36), cv(37)];
+    const ttNums  = ttTexts.map(t => t ? ttTextToNum(String(t), n1val) : null);
+
+    // TPs: texto → número usando N1
+    const tpTexts = [];
+    const tpNums  = [];
+    for (let c = 40; c <= 47; c++) {
+      const t = cv(c);
+      tpTexts.push(t ? String(t) : null);
+      tpNums.push(t ? tpTextToNum(String(t), n1val) : null);
+    }
+
+    // Asistencia diaria
     const diasAsist = [];
     for (let c = 3; c <= 29; c += 2) {
       const v = cv(c);
-      if (v && v !== '-') diasAsist.push(v);
+      if (v && v !== '-') diasAsist.push(String(v));
     }
 
-    // EPP % directo de la celda AG (col 32)
-    const eppPct = cv(32); // ya es % como decimal (0–1) o número
-
-    // Participación: deducida de N1, asist y epp
-    const asistVal = cv(31) || 0;
-    const eppVal   = eppPct !== null ? Number(eppPct) * 10 : 0;
-    const n1       = cv(33);
-    const particVal = n1 !== null ? Math.max(0, (n1 - asistVal*0.2 - eppVal*0.2) / 0.6) : null;
-
-    // TTs: celdas AI-AL (col 34-37) contienen el valor numérico calculado
-    const tts = [cv(34), cv(35), cv(36), cv(37)];
-
-    // TPs: celdas AO-AV (col 40-47) contienen el valor numérico calculado
-    const tps = [];
-    for (let c = 40; c <= 47; c++) tps.push(cv(c));
+    // Participación promedio (columnas pares 4,6...30)
+    const particVals = [];
+    const PARTIC_MAP = {E:10,MB:9,B:7.5,R:5.5,I:2.5,N:0};
+    for (let c = 4; c <= 30; c += 2) {
+      const v = cv(c);
+      if (v && v !== '-' && PARTIC_MAP[v] !== undefined) particVals.push(PARTIC_MAP[v]);
+    }
+    const particProm = particVals.length ? sum(particVals)/particVals.length : 0;
 
     students.push({
       nombre: nombre.trim(),
-      asist:  asistVal,
-      eppPct: eppPct !== null ? Number(eppPct) : null,
-      n1:     n1 !== null ? Number(n1) : null,
-      particVal,
-      tts,
-      examen: cv(38) !== null ? Number(cv(38)) : null,
-      n2:     cv(39) !== null ? Number(cv(39)) : null,
-      tps,
-      n3:     cv(48) !== null ? Number(cv(48)) : null,
-      nf:     cv(49) !== null ? Number(cv(49)) : null,
+      asist:  asist  ?? 0,
+      eppPct,
+      n1:     n1     ?? 0,
+      particProm,
+      ttTexts,
+      ttNums,
+      examen: examen ?? 0,
+      n2:     n2     ?? 0,
+      tpTexts,
+      tpNums,
+      n3:     n3     ?? 0,
+      nf:     nf     ?? 0,
       diasAsist
     });
   }
@@ -469,9 +532,9 @@ function showProfile(idx) {
   // ── N1 ──
   const asistVal  = s.asist || 0;
   const eppVal    = s.eppPct !== null ? s.eppPct * 10 : 0;
-  const particVal = s.particVal !== null ? s.particVal : 0;
-  const aAsist    = asistVal  * 0.2;
-  const aEpp      = eppVal    * 0.2;
+  const particVal = s.particProm || 0;
+  const aAsist    = asistVal * 0.2;
+  const aEpp      = eppVal   * 0.2;
   const aPartic   = particVal * 0.6;
 
   el('val-n1').textContent = fmt(n1);
@@ -479,66 +542,66 @@ function showProfile(idx) {
   el('disp-asist').textContent   = fmt(asistVal);
   el('fill-asist').style.width   = `${asistVal*10}%`;
   el('aporte-asist').textContent = `(+${aAsist.toFixed(2)})`;
-  el('disp-epp').textContent   = s.eppPct !== null ? `${Math.round(s.eppPct*100)}%` : '—';
-  el('fill-epp').style.width   = s.eppPct !== null ? `${s.eppPct*100}%` : '0%';
-  el('aporte-epp').textContent = `(+${aEpp.toFixed(2)})`;
-  el('disp-partic').textContent   = fmt(particVal);
-  el('fill-partic').style.width   = `${Math.min(particVal*10,100)}%`;
+  el('disp-epp').textContent     = s.eppPct !== null ? `${Math.round(s.eppPct*100)}%` : '—';
+  el('fill-epp').style.width     = s.eppPct !== null ? `${s.eppPct*100}%` : '0%';
+  el('aporte-epp').textContent   = `(+${aEpp.toFixed(2)})`;
+  el('disp-partic').textContent  = fmt(particVal);
+  el('fill-partic').style.width  = `${Math.min(particVal*10,100)}%`;
   el('aporte-partic').textContent = `(+${aPartic.toFixed(2)})`;
   makeDonut('chartN1',[aAsist,aEpp,aPartic,Math.max(0,10-aAsist-aEpp-aPartic)],[p.asist,p.epp,p.partic,ec]);
 
   // ── N2 ──
-  const ttVals = s.tts.map(v => v!==null ? Number(v) : null);
-  const ttNums = ttVals.map(v => v!==null ? v : 0);
+  const ttNums = s.ttNums.map(v => v !== null ? v : 0);
   const ttProm = sum(ttNums) / 4;
-  const exVal  = s.examen !== null ? s.examen : 0;
+  const exVal  = s.examen || 0;
   const aTT    = ttProm * 0.3;
   const aEx    = exVal  * 0.7;
 
   el('val-n2').textContent = fmt(n2);
   el('val-n2').style.color = gradeColor(n2);
-  el('seg-tt').textContent   = fmt(ttProm);
-  el('fill-tt').style.width  = `${ttProm*10}%`;
-  el('aporte-tt').textContent    = `(+${aTT.toFixed(2)})`;
-  el('disp-examen').textContent  = fmt(exVal);
-  el('fill-examen').style.width  = `${exVal*10}%`;
+  el('seg-tt').textContent        = fmt(ttProm);
+  el('fill-tt').style.width       = `${ttProm*10}%`;
+  el('aporte-tt').textContent     = `(+${aTT.toFixed(2)})`;
+  el('disp-examen').textContent   = fmt(exVal);
+  el('fill-examen').style.width   = `${exVal*10}%`;
   el('aporte-examen').textContent = `(+${aEx.toFixed(2)})`;
 
-  // TTs display
   const ttDiv = el('tt-display');
   ttDiv.innerHTML = '';
-  ttVals.forEach((v, i) => {
+  s.ttTexts.forEach((txt, i) => {
     const row = document.createElement('div');
     row.className = 'tt-row';
-    const entregado = v !== null && v > 0;
-    row.innerHTML = `<span class="tt-num">TT ${i+1}</span><span class="tt-badge ${entregado?'entregado':''}">${entregado ? fmt(v) : 'No entregado'}</span>`;
+    const entregado = txt && txt !== 'N';
+    const numVal = s.ttNums[i];
+    row.innerHTML = `<span class="tt-num">TT ${i+1}</span><span class="tt-badge ${entregado?'entregado':''}">${entregado ? `${txt} (${fmt(numVal)})` : 'No entregado'}</span>`;
     ttDiv.appendChild(row);
   });
   makeDonut('chartN2',[aTT,aEx,Math.max(0,10-aTT-aEx)],[p.tt,p.examen,ec]);
 
   // ── N3 ──
-  const tpVals   = s.tps.map(v => v!==null ? Number(v) : 0);
-  const tpAportes = tpVals.map(v => v/8);
-  const sumaTP   = sum(tpAportes);
+  const tpNums    = s.tpNums.map(v => v !== null ? v : 0);
+  const tpAportes = tpNums.map(v => v/8);
+  const sumaTP    = sum(tpAportes);
 
   el('val-n3').textContent = fmt(n3);
   el('val-n3').style.color = gradeColor(n3);
 
   const tpBars = el('tp-bars');
   tpBars.innerHTML = '';
-  tpVals.forEach((v, i) => {
+  tpNums.forEach((v, i) => {
+    const txt = s.tpTexts[i];
+    const entregado = txt && txt !== 'N';
     const row = document.createElement('div');
     row.className = 'nota-bar-row';
-    const entregado = v > 0;
     row.innerHTML = `
       <div class="nota-bar-header">
         <span class="nota-bar-name">TP ${i+1} <span>12.5%</span></span>
-        <span class="nota-bar-val" style="color:var(--c-tp)">${entregado ? fmt(v) : '—'} <span style="opacity:0.6;font-weight:400">(+${(v/8).toFixed(2)})</span></span>
+        <span class="nota-bar-val" style="color:var(--c-tp)">${entregado ? `${txt} (${fmt(v)})` : '—'} <span style="opacity:0.6;font-weight:400">(+${(v/8).toFixed(2)})</span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" style="background:var(--c-tp);width:${v*10}%"></div></div>`;
     tpBars.appendChild(row);
   });
-  makeDonut('chartN3',[...tpAportes,Math.max(0,10-sumaTP)],[...tpVals.map(v=>v>0?p.tp:ec),ec]);
+  makeDonut('chartN3',[...tpAportes,Math.max(0,10-sumaTP)],[...tpNums.map(v=>v>0?p.tp:ec),ec]);
 
   // ── FINAL ──
   el('lbl-n1').textContent = fmt(n1);
