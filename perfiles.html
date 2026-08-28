@@ -436,14 +436,10 @@ function parseStudents(rows) {
       if (v && v !== '-') diasAsist.push(String(v));
     }
 
-    // Participación promedio (columnas pares 4,6...30)
-    const particVals = [];
-    const PARTIC_MAP = {E:10,MB:9,B:7.5,R:5.5,I:2.5,N:0};
-    for (let c = 4; c <= 30; c += 2) {
-      const v = cv(c);
-      if (v && v !== '-' && PARTIC_MAP[v] !== undefined) particVals.push(PARTIC_MAP[v]);
-    }
-    const particProm = particVals.length ? sum(particVals)/particVals.length : 0;
+    // Participación: deducida de N1, asist y EPP
+    const eppNum = eppPct !== null ? eppPct * 10 : 0;
+    const n1num  = n1 ?? 0;
+    const particProm = Math.max(0, Math.min(10, (n1num - (asist??0)*0.2 - eppNum*0.2) / 0.6));
 
     students.push({
       nombre: nombre.trim(),
@@ -540,13 +536,16 @@ function showProfile(idx) {
 
   el('val-n1').textContent = fmt(n1);
   el('val-n1').style.color = gradeColor(n1);
-  el('disp-asist').textContent   = fmt(asistVal);
+  // Asistencia: en puntos sobre 10 (igual que slider muestra %)
+  el('disp-asist').textContent   = `${Math.round(asistVal*10)}%`;
   el('fill-asist').style.width   = `${asistVal*10}%`;
   el('aporte-asist').textContent = `(+${aAsist.toFixed(2)})`;
-  el('disp-epp').textContent     = s.eppPct !== null ? `${Math.round(s.eppPct*100)}%` : '—';
-  el('fill-epp').style.width     = s.eppPct !== null ? `${s.eppPct*100}%` : '0%';
-  el('aporte-epp').textContent   = `(+${aEpp.toFixed(2)})`;
-  el('disp-partic').textContent  = fmt(particVal);
+  // EPP: en porcentaje
+  el('disp-epp').textContent   = s.eppPct !== null ? `${Math.round(s.eppPct*100)}%` : '—';
+  el('fill-epp').style.width   = s.eppPct !== null ? `${s.eppPct*100}%` : '0%';
+  el('aporte-epp').textContent = `(+${aEpp.toFixed(2)})`;
+  // Participación: valor numérico deducido (0-10)
+  el('disp-partic').textContent  = `${fmt(particVal)}`;
   el('fill-partic').style.width  = `${Math.min(particVal*10,100)}%`;
   el('aporte-partic').textContent = `(+${aPartic.toFixed(2)})`;
   makeDonut('chartN1',[aAsist,aEpp,aPartic,Math.max(0,10-aAsist-aEpp-aPartic)],[p.asist,p.epp,p.partic,ec]);
