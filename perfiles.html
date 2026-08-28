@@ -479,6 +479,12 @@ async function selectGroup(suffix) {
     try {
       const rows = await fetchSheet(suffix);
       allData[suffix] = parseStudents(rows);
+    console.log('Estudiantes cargados:', allData[suffix].map(s => ({
+      nombre: s.nombre,
+      ttTexts: s.ttTexts,
+      tpTexts: s.tpTexts,
+      n1: s.n1, n2: s.n2, n3: s.n3, nf: s.nf
+    })));
     } catch(e) {
       el('student-list').innerHTML = '<div class="state-msg">Error al cargar. Verificá que la planilla sea pública.</div>';
       return;
@@ -541,7 +547,7 @@ function showProfile(idx) {
   el('fill-asist').style.width   = `${asistVal*10}%`;
   el('aporte-asist').textContent = `(+${aAsist.toFixed(2)})`;
   // EPP: en porcentaje
-  el('disp-epp').textContent   = s.eppPct !== null ? `${Math.round(s.eppPct*100)}%` : '—';
+  el('disp-epp').textContent   = s.eppPct !== null ? `${Math.round(s.eppPct*100)}%` : '0%';
   el('fill-epp').style.width   = s.eppPct !== null ? `${s.eppPct*100}%` : '0%';
   el('aporte-epp').textContent = `(+${aEpp.toFixed(2)})`;
   // Participación: valor numérico deducido (0-10)
