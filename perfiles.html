@@ -404,27 +404,12 @@ let selectorOpen = true;
 async function fetchSheet(suffix) {
   const sheetName = suffix==='LM' ? 'L/M' : 'M/J';
   const name = encodeURIComponent(`3er Bimestre (${sheetName})`);
-  // Usamos export CSV que devuelve todas las columnas con valores calculados
-  const GID = suffix==='LM' ? '1218415024' : '338054439';
-  const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`);
+  // tq=select * fuerza a traer todas las columnas incluyendo las intermedias vacías
+  const url = `${BASE_URL}${name}&tq=${encodeURIComponent('select *')}`;
+  const res = await fetch(url);
   const text = await res.text();
-  return parseCSV(text);
-}
-
-function parseCSV(text) {
-  // Parsea CSV respetando comillas y comas dentro de campos
-  const lines = text.split('\n');
-  return lines.map(line => {
-    const cells = [];
-    let cur = '', inQ = false;
-    for (let i=0; i<line.length; i++) {
-      if (line[i]==='"') { inQ=!inQ; }
-      else if (line[i]===',' && !inQ) { cells.push({v: cur.trim()||null}); cur=''; }
-      else cur += line[i];
-    }
-    cells.push({v: cur.trim()||null});
-    return {c: cells};
-  });
+  const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/)[1]);
+  return json.table.rows;
 }
 
 function parseStudents(rows) {
