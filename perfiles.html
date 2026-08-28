@@ -357,12 +357,7 @@ function upChart(c, data, colors) {
   c.update();
 }
 
-// Init charts con vacío
-const p0 = PALETTES.light, ec0 = emptyColor();
-const cFinal = makeDonut('chartFinal',[0,0,0,10],[p0.n1,p0.n2,p0.n3,ec0],'65%');
-const cN1    = makeDonut('chartN1',   [0,0,0,10],[p0.asist,p0.epp,p0.partic,ec0]);
-const cN2    = makeDonut('chartN2',   [0,0,10],  [p0.tt,p0.examen,ec0]);
-const cN3    = makeDonut('chartN3',   Array(9).fill(0),[...Array(8).fill(p0.tp),ec0]);
+// Charts se crean en showProfile
 
 // Construir grids TT y TP (solo display, sin interacción)
 const ttGrid = el('tt-grid'), ttBlocks = el('tt-blocks');
@@ -515,7 +510,7 @@ function showProfile(idx) {
   el('disp-partic').textContent   = `${fmt(particVal)}`;
   el('fill-partic').style.width   = `${Math.min(particVal*10,100)}%`;
   el('aporte-partic').textContent = `(+${aPartic.toFixed(2)})`;
-  upChart(cN1,[aAsist,aEpp,aPartic,Math.max(0,10-aAsist-aEpp-aPartic)],[p.asist,p.epp,p.partic,ec]);
+  makeDonut('chartN1',[aAsist,aEpp,aPartic,Math.max(0,10-aAsist-aEpp-aPartic)],[p.asist,p.epp,p.partic,ec]);
 
   // ── N2 ──
   const ttNums = s.ttNums;
@@ -537,7 +532,7 @@ function showProfile(idx) {
     el(`ttd-${i}`).style.display = entregado ? 'block' : 'none';
     if (entregado) el(`ttd-label-${i}`).textContent = `TT ${i+1}: ${s.ttTexts[i]} (${fmt(s.ttNums[i])})`;
   }
-  upChart(cN2,[aTT,aEx,Math.max(0,10-aTT-aEx)],[p.tt,p.examen,ec]);
+  makeDonut('chartN2',[aTT,aEx,Math.max(0,10-aTT-aEx)],[p.tt,p.examen,ec]);
 
   // ── N3 ──
   const tpNums    = s.tpNums;
@@ -552,7 +547,7 @@ function showProfile(idx) {
     el(`lbl-tp-ap-${i}`).textContent  = `(+${(tpNums[i]/8).toFixed(2)})`;
     el(`fill-tp-${i}`).style.width    = `${tpNums[i]*10}%`;
   }
-  upChart(cN3,[...tpAportes,Math.max(0,10-sumaTP)],[...tpNums.map((_,i)=>s.tpTexts[i]?p.tp:ec),ec]);
+  makeDonut('chartN3',[...tpAportes,Math.max(0,10-sumaTP)],[...tpNums.map((_,i)=>s.tpTexts[i]?p.tp:ec),ec]);
 
   // ── FINAL ──
   const fc = gradeColor(nf);
@@ -565,7 +560,7 @@ function showProfile(idx) {
   el('lbl-final').textContent = fmt(nf);
   el('lbl-final').style.color = fc;
   const aN1=n1/3, aN2=n2/3, aN3=n3/3;
-  upChart(cFinal,[aN1,aN2,aN3,Math.max(0,10-aN1-aN2-aN3)],[p.n1,p.n2,p.n3,ec],'65%');
+  makeDonut('chartFinal',[aN1,aN2,aN3,Math.max(0,10-aN1-aN2-aN3)],[p.n1,p.n2,p.n3,ec],'65%');
 
   el('perfil-wrap').scrollIntoView({behavior:'smooth',block:'start'});
 }
