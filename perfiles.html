@@ -402,54 +402,34 @@ let currentGroup = 'LM';
 let selectorOpen = true;
 
 async function fetchSheet(suffix) {
-  const GID = suffix==='LM' ? '1218415024' : '338054439';
-  const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`);
+  const sheetName = suffix==='LM' ? 'L/M' : 'M/J';
+  const name = encodeURIComponent(`3er Bimestre (${sheetName})`);
+  const res = await fetch(`${BASE_URL}${name}`);
   const text = await res.text();
-  return parseCSV(text);
-}
-
-function parseCSV(text) {
-  return text.split('\n').map(line => {
-    const cells = [];
-    let cur = '', inQ = false;
-    for (const ch of line) {
-      if (ch === '"') { inQ = !inQ; }
-      else if (ch === ',' && !inQ) { cells.push({v: cur.trim() || null}); cur = ''; }
-      else cur += ch;
-    }
-    cells.push({v: cur.trim() || null});
-    return {c: cells};
-  });
+  const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/)[1]);
+  return json.table.rows;
 }
 
 function parseStudents(rows) {
   const students = [];
-  // Saltar headers: buscar fila con "APELLIDOS" y empezar 2 filas después
-  let startIdx = 2;
-  for (let i=0; i<rows.length; i++) {
-    const v = rows[i].c[1]?.v;
-    if (v && String(v).toUpperCase().includes('APELLIDOS')) { startIdx = i+2; break; }
-  }
-  for (let i=startIdx; i<rows.length; i+=2) {
+  for (let i=2; i<rows.length; i+=2) {
     const r = rows[i];
     if (!r || !r.c) continue;
     const cv = c => (r.c[c] && r.c[c].v!==null && r.c[c].v!==undefined) ? r.c[c].v : null;
     const nombre = cv(1);
     if (!nombre || typeof nombre !== 'string' || !nombre.trim()) continue;
 
-    const asist  = toNum(cv(31));
+    const asist  = cv(31) !== null ? Number(cv(31)) : 0;
     const eppRaw = cv(32);
     let eppPct = 0;
     if (eppRaw !== null && eppRaw !== '') {
-      const str = String(eppRaw).replace('%','').replace(',','.');
-      const num = parseFloat(str);
+      const num = parseFloat(String(eppRaw).replace('%',''));
       if (!isNaN(num)) eppPct = num > 1 ? num/100 : num;
     }
-    const toNum = v => v !== null ? parseFloat(String(v).replace(',','.')) || 0 : 0;
-    const n1  = toNum(cv(33));
-    const n2  = toNum(cv(39));
-    const n3  = toNum(cv(48));
-    const nf  = toNum(cv(49));
+    const n1  = cv(33) !== null ? Number(cv(33)) : 0;
+    const n2  = cv(39) !== null ? Number(cv(39)) : 0;
+    const n3  = cv(48) !== null ? Number(cv(48)) : 0;
+    const nf  = cv(49) !== null ? Number(cv(49)) : 0;
 
     // TTs: texto en cols 34-37
     const ttTexts = [cv(34), cv(35), cv(36), cv(37)].map(v => v ? String(v) : null);
@@ -465,7 +445,7 @@ function parseStudents(rows) {
     }
 
     // Examen: col 38
-    const examen = toNum(cv(38));
+    const examen = cv(38) !== null ? Number(cv(38)) : 0;
 
     // Participación deducida de N1
     const eppVal  = eppPct * 10;
