@@ -305,8 +305,7 @@
 
 <script>
 // ── CONFIG ──
-const SHEET_ID = '1Je74PUHDnXV20TzegR-WTi1Y8Quhq-iH5SM_pS-1nOI';
-const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylWZrWZjUTPnT45Lbz3cAcuZwR-pN6MbtrAogPhcdGRN6SvT2HeA0ABzFQ-P-KeH-a/exec';
 
 // ── UTILS (idénticos al simulador) ──
 const roundHalf = n => Math.round(n * 2) / 2;
@@ -402,58 +401,46 @@ let currentGroup = 'LM';
 let selectorOpen = true;
 
 async function fetchSheet(suffix) {
-  const sheetName = suffix==='LM' ? 'L/M' : 'M/J';
-  const name = encodeURIComponent(`3er Bimestre (${sheetName})`);
-  const res = await fetch(`${BASE_URL}${name}`);
-  const text = await res.text();
-  const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/)[1]);
-  return json.table.rows;
+  const res = await fetch(`${APPS_SCRIPT_URL}?sheet=${suffix}`);
+  return await res.json();
 }
 
 function parseStudents(rows) {
-  const students = [];
-  for (let i=2; i<rows.length; i+=2) {
-    const r = rows[i];
-    if (!r || !r.c) continue;
-    const cv = c => (r.c[c] && r.c[c].v!==null && r.c[c].v!==undefined) ? r.c[c].v : null;
-    const nombre = cv(1);
-    if (!nombre || typeof nombre !== 'string' || !nombre.trim()) continue;
-
-    const asist  = cv(31) !== null ? Number(cv(31)) : 0;
-    const eppRaw = cv(32);
+  // rows ya viene como array de objetos del Apps Script
+  return rows.map(s => {
+    const n1 = Number(s.n1) || 0;
+    const eppRaw = s.epp;
     let eppPct = 0;
-    if (eppRaw !== null && eppRaw !== '') {
+    if (eppRaw !== null && eppRaw !== '' && eppRaw !== 0) {
       const num = parseFloat(String(eppRaw).replace('%',''));
       if (!isNaN(num)) eppPct = num > 1 ? num/100 : num;
     }
-    const n1  = cv(33) !== null ? Number(cv(33)) : 0;
-    const n2  = cv(39) !== null ? Number(cv(39)) : 0;
-    const n3  = cv(48) !== null ? Number(cv(48)) : 0;
-    const nf  = cv(49) !== null ? Number(cv(49)) : 0;
-
-    // TTs: texto en cols 34-37
-    const ttTexts = [cv(34), cv(35), cv(36), cv(37)].map(v => v ? String(v) : null);
-    const ttNums  = ttTexts.map(t => t ? ttTextToNum(t, n1) : 0);
-
-    // TPs: texto en cols 40-47
-    const tpTexts = [];
-    const tpNums  = [];
-    for (let c=40; c<=47; c++) {
-      const t = cv(c);
-      tpTexts.push(t ? String(t) : null);
-      tpNums.push(t ? tpTextToNum(String(t), n1) : 0);
-    }
-
-    // Examen: col 38
-    const examen = cv(38) !== null ? Number(cv(38)) : 0;
-
-    // Participación deducida de N1
-    const eppVal  = eppPct * 10;
+    const eppVal = eppPct * 10;
+    const asist  = Number(s.asist) || 0;
     const particVal = Math.max(0, Math.min(10, (n1 - asist*0.2 - eppVal*0.2) / 0.6));
 
-    students.push({ nombre: nombre.trim(), asist, eppPct, n1, particVal, ttTexts, ttNums, examen, n2, tpTexts, tpNums, n3, nf });
-  }
-  return students;
+    const ttTexts = [s.tt1, s.tt2, s.tt3, s.tt4].map(v => v ? String(v).trim() : null);
+    const ttNums  = ttTexts.map(t => t ? ttTextToNum(t, n1) : 0);
+
+    const tpTexts = [s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6,s.tp7,s.tp8].map(v => v ? String(v).trim() : null);
+    const tpNums  = tpTexts.map(t => t ? tpTextToNum(t, n1) : 0);
+
+    return {
+      nombre:    s.nombre,
+      asist,
+      eppPct,
+      n1,
+      particVal,
+      ttTexts,
+      ttNums,
+      examen:    Number(s.examen) || 0,
+      n2:        Number(s.n2) || 0,
+      tpTexts,
+      tpNums,
+      n3:        Number(s.n3) || 0,
+      nf:        Number(s.nf) || 0
+    };
+  });
 }
 
 // ── UI SELECTOR ──
