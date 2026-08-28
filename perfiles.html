@@ -6,6 +6,7 @@
 <title>Perfiles · Oficina Técnica I</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
+  /* ── IDÉNTICO AL SIMULADOR ── */
   :root {
     --bg: #f3f4f8; --surface: #ffffff; --card: #fafafc;
     --text: #0f172a; --muted: #64748b; --border: #e2e8f0;
@@ -49,6 +50,9 @@
     .nota-bar-track, .track { height: 6px; }
     .card-right { width: 120px; }
     .pie-wrapper { width: 76px; height: 76px; min-width: 76px; min-height: 76px; max-width: 76px; max-height: 76px; }
+    .tp-btn { min-width: 28px; height: 25px; font-size: 12px; }
+    .section-label { font-size: 12px; }
+    .tp-desempeno-label { font-size: 11px; }
   }
   @media (min-width: 1200px) {
     body { padding: 40px 72px 56px; }
@@ -62,48 +66,6 @@
   header h1 { font-size: clamp(18px,4vw,22px); font-weight: 700; color: var(--text); letter-spacing: -0.3px; margin-bottom: 4px; }
   header .sub { font-size: 12px; color: var(--muted); }
 
-  /* ── SELECTOR CARD ── */
-  .selector-card {
-    background: var(--card); border-radius: 14px;
-    border: 1px solid var(--border); margin-bottom: 12px; overflow: hidden;
-  }
-  .selector-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 13px 16px; cursor: pointer; user-select: none;
-  }
-  .selector-header-left { display: flex; flex-direction: column; gap: 2px; }
-  .selector-header-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
-  .selector-header-name { font-size: 14px; font-weight: 700; color: var(--text); }
-  .selector-chevron { font-size: 16px; color: var(--muted); transition: transform 0.2s; }
-  .selector-chevron.open { transform: rotate(180deg); }
-  .selector-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
-  .selector-body.open { display: block; }
-  .group-tabs { display: flex; gap: 6px; margin: 12px 0 10px; }
-  .group-tab {
-    flex: 1; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border);
-    background: transparent; color: var(--muted); font-size: 12px;
-    font-family: inherit; cursor: pointer; font-weight: 500; text-align: center;
-    transition: all 0.12s;
-  }
-  .group-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
-  .student-list { display: flex; flex-direction: column; gap: 3px; max-height: 280px; overflow-y: auto; }
-  .student-btn {
-    padding: 8px 10px; border-radius: 8px; border: 1px solid transparent;
-    background: transparent; color: var(--text); font-size: 13px;
-    font-family: inherit; cursor: pointer; text-align: left;
-    display: flex; justify-content: space-between; align-items: center;
-    transition: all 0.1s;
-  }
-  .student-btn:hover { background: var(--surface); border-color: var(--border); }
-  .student-btn.active { background: var(--surface); border-color: var(--accent); color: var(--accent); font-weight: 700; }
-  .student-nota { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-
-  /* ── ESTADO ── */
-  .state-msg { text-align: center; padding: 32px 20px; font-size: 13px; color: var(--muted); }
-  .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 10px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── CARDS (idéntico al simulador) ── */
   .card {
     background: var(--card); border-radius: 14px; border: 1px solid var(--border);
     margin-bottom: 12px; display: flex; overflow: hidden;
@@ -133,24 +95,66 @@
   .nota-bar-name span { font-size: 10px; color: var(--muted); opacity: 0.8; margin-left: 3px; }
   .nota-bar-val { font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
   .nota-bar-track { height: 5px; border-radius: 3px; background: var(--track-bg); overflow: hidden; }
-  .nota-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+  .nota-bar-fill { height: 100%; border-radius: 3px; transition: width 0.2s ease; }
 
-  /* TT/TP display-only */
-  .tt-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-  .tt-num { font-size: 11px; font-weight: 700; color: var(--muted); width: 36px; flex-shrink: 0; }
-  .tt-badge {
-    padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 700;
-    background: var(--surface); border: 1px solid var(--border); color: var(--text);
-  }
-  .tt-badge.entregado { background: var(--accent); border-color: var(--accent); color: #fff; }
   .section-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
 
-  /* Perfil oculto/visible */
+  .tp-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+  .tp-btn {
+    min-width: 25px; height: 22px; padding: 0 4px; border-radius: 5px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--muted); font-size: 11px; font-weight: 700; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .tp-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .tp-desempeno-block {
+    margin-bottom: 6px; background: rgba(125,125,125,0.04);
+    padding: 5px 7px; border-radius: 6px; border: 1px solid var(--border);
+  }
+  .tp-desempeno-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; font-weight: 700; }
+
+  /* ── SELECTOR (bloque extra) ── */
+  .selector-card {
+    background: var(--card); border-radius: 14px; border: 1px solid var(--border);
+    margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .selector-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px; cursor: pointer; user-select: none;
+  }
+  .selector-header-left { display: flex; flex-direction: column; gap: 2px; }
+  .selector-label-top { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+  .selector-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .selector-chevron { font-size: 14px; color: var(--muted); transition: transform 0.2s; }
+  .selector-chevron.open { transform: rotate(180deg); }
+  .selector-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+  .selector-body.open { display: block; }
+  .group-tabs { display: flex; gap: 6px; margin: 10px 0 10px; }
+  .group-tab {
+    flex: 1; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 500;
+    font-family: inherit; cursor: pointer; text-align: center; transition: all 0.12s;
+  }
+  .group-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+  .student-list { display: flex; flex-direction: column; gap: 3px; max-height: 260px; overflow-y: auto; }
+  .student-btn {
+    padding: 7px 10px; border-radius: 8px; border: 1px solid transparent;
+    background: transparent; color: var(--text); font-size: 12px; font-family: inherit;
+    cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center;
+    transition: all 0.1s;
+  }
+  .student-btn:hover { background: var(--surface); border-color: var(--border); }
+  .student-btn.active { background: var(--surface); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .student-nota { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+  .state-msg { text-align: center; padding: 24px; font-size: 12px; color: var(--muted); }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   .perfil-wrap { display: none; }
   .perfil-wrap.visible { display: block; }
-
-  /* Empty state */
-  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 13px; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body>
@@ -162,18 +166,18 @@
 </header>
 
 <!-- SELECTOR -->
-<div class="selector-card" id="selector-card">
+<div class="selector-card">
   <div class="selector-header" onclick="toggleSelector()">
     <div class="selector-header-left">
-      <span class="selector-header-label">Estudiante seleccionado</span>
-      <span class="selector-header-name" id="sel-name">Seleccioná un estudiante</span>
+      <span class="selector-label-top">Estudiante seleccionado</span>
+      <span class="selector-name" id="sel-name">Seleccioná un estudiante</span>
     </div>
-    <span class="selector-chevron" id="sel-chevron">▼</span>
+    <span class="selector-chevron open" id="sel-chevron">▼</span>
   </div>
-  <div class="selector-body" id="selector-body">
+  <div class="selector-body open" id="selector-body">
     <div class="group-tabs">
-      <button class="group-tab active" onclick="selectGroup('LM')">Lunes y Miércoles (L/M)</button>
-      <button class="group-tab" onclick="selectGroup('MJ')">Martes y Jueves (M/J)</button>
+      <button class="group-tab active" onclick="selectGroup('LM')">Lunes y Miércoles</button>
+      <button class="group-tab" onclick="selectGroup('MJ')">Martes y Jueves</button>
     </div>
     <div class="student-list" id="student-list">
       <div class="state-msg"><div class="spinner"></div>Cargando...</div>
@@ -181,7 +185,7 @@
   </div>
 </div>
 
-<!-- PERFIL (idéntico al simulador, solo visual) -->
+<!-- PERFIL (idéntico al simulador) -->
 <div class="perfil-wrap" id="perfil-wrap">
 <div class="layout">
 <div class="col-notes">
@@ -193,27 +197,27 @@
     <div class="nota-bar-row">
       <div class="nota-bar-header">
         <span class="nota-bar-name">Asistencia <span>20%</span></span>
-        <span class="nota-bar-val"><span id="disp-asist">—</span> <span id="aporte-asist" style="opacity:0.6;font-weight:400"></span></span>
+        <span class="nota-bar-val"><span id="disp-asist">0%</span> <span id="aporte-asist" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-asist" style="background:var(--c-asist);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
         <span class="nota-bar-name">EPP <span>20%</span></span>
-        <span class="nota-bar-val"><span id="disp-epp">—</span> <span id="aporte-epp" style="opacity:0.6;font-weight:400"></span></span>
+        <span class="nota-bar-val"><span id="disp-epp">0%</span> <span id="aporte-epp" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-epp" style="background:var(--c-epp);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
         <span class="nota-bar-name">Participación <span>60%</span></span>
-        <span class="nota-bar-val"><span id="disp-partic">—</span> <span id="aporte-partic" style="opacity:0.6;font-weight:400"></span></span>
+        <span class="nota-bar-val"><span id="disp-partic">0.0</span> <span id="aporte-partic" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-partic" style="background:var(--c-partic);width:0%"></div></div>
     </div>
   </div>
   <div class="card-right">
-    <div class="card-value" id="val-n1">—</div>
+    <div class="card-value" id="val-n1">0.0</div>
     <div class="pie-wrapper"><canvas id="chartN1"></canvas></div>
   </div>
 </div>
@@ -222,25 +226,26 @@
 <div class="card">
   <div class="card-left">
     <div class="card-title">Nota 2: Teoría</div>
-    <div class="section-label">Trabajos teóricos</div>
-    <div id="tt-display" style="margin-bottom:8px"></div>
-    <div class="nota-bar-row">
+    <div class="section-label">Trabajos teóricos entregados</div>
+    <div class="tp-grid" id="tt-grid"></div>
+    <div id="tt-blocks"></div>
+    <div class="nota-bar-row" style="margin-top:2px">
       <div class="nota-bar-header">
         <span class="nota-bar-name">Entregas <span>30%</span></span>
-        <span class="nota-bar-val"><span id="seg-tt">—</span> <span id="aporte-tt" style="opacity:0.6;font-weight:400"></span></span>
+        <span class="nota-bar-val"><span id="seg-tt">0.0</span> <span id="aporte-tt" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-tt" style="background:var(--c-tt);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
         <span class="nota-bar-name">Examen <span>70%</span></span>
-        <span class="nota-bar-val"><span id="disp-examen">—</span> <span id="aporte-examen" style="opacity:0.6;font-weight:400"></span></span>
+        <span class="nota-bar-val"><span id="disp-examen">0.0</span> <span id="aporte-examen" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-examen" style="background:var(--c-examen);width:0%"></div></div>
     </div>
   </div>
   <div class="card-right">
-    <div class="card-value" id="val-n2">—</div>
+    <div class="card-value" id="val-n2">0.0</div>
     <div class="pie-wrapper"><canvas id="chartN2"></canvas></div>
   </div>
 </div>
@@ -249,11 +254,12 @@
 <div class="card">
   <div class="card-left">
     <div class="card-title">Nota 3: Práctica</div>
-    <div class="section-label">Trabajos prácticos</div>
-    <div id="tp-bars"></div>
+    <div class="section-label">Trabajos prácticos entregados</div>
+    <div class="tp-grid" id="tp-grid"></div>
+    <div id="tp-bars" style="margin-top:4px"></div>
   </div>
   <div class="card-right">
-    <div class="card-value" id="val-n3">—</div>
+    <div class="card-value" id="val-n3">0.0</div>
     <div class="pie-wrapper"><canvas id="chartN3"></canvas></div>
   </div>
 </div>
@@ -267,27 +273,27 @@
     <div class="nota-bar-row">
       <div class="nota-bar-header">
         <span class="nota-bar-name">Compromiso <span>33%</span></span>
-        <span class="nota-bar-val" id="lbl-n1" style="color:var(--col-n1)">—</span>
+        <span class="nota-bar-val" id="lbl-n1" style="color:var(--col-n1)">0.0</span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="bar-n1" style="background:var(--col-n1);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
         <span class="nota-bar-name">Teoría <span>33%</span></span>
-        <span class="nota-bar-val" id="lbl-n2" style="color:var(--col-n2)">—</span>
+        <span class="nota-bar-val" id="lbl-n2" style="color:var(--col-n2)">0.0</span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="bar-n2" style="background:var(--col-n2);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
         <span class="nota-bar-name">Práctica <span>33%</span></span>
-        <span class="nota-bar-val" id="lbl-n3" style="color:var(--col-n3)">—</span>
+        <span class="nota-bar-val" id="lbl-n3" style="color:var(--col-n3)">0.0</span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="bar-n3" style="background:var(--col-n3);width:0%"></div></div>
     </div>
   </div>
   <div class="card-right">
-    <div class="card-value" id="lbl-final" style="font-size:32px">—</div>
+    <div class="card-value" id="lbl-final" style="font-size:32px">0.0</div>
     <div class="pie-wrapper"><canvas id="chartFinal"></canvas></div>
   </div>
 </div>
@@ -302,16 +308,15 @@
 const SHEET_ID = '1Je74PUHDnXV20TzegR-WTi1Y8Quhq-iH5SM_pS-1nOI';
 const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 
-// ── UTILS ──
-const el = id => document.getElementById(id);
+// ── UTILS (idénticos al simulador) ──
 const roundHalf = n => Math.round(n * 2) / 2;
 const excelRound = (n, dec) => { const f = Math.pow(10,dec); return Math.round((n+Number.EPSILON)*f)/f; };
-const fmt = n => (n===null||n===undefined||isNaN(n)) ? '—' : Math.abs(n-10)<1e-6 ? '10' : Number(n).toFixed(1);
+const fmt = n => Math.abs(n-10)<1e-6 ? '10' : Number(n).toFixed(1);
 const dark = () => window.matchMedia('(prefers-color-scheme:dark)').matches;
 const emptyColor = () => dark() ? '#282d3f' : '#e2e8f0';
-const gradeColor = n => (!n&&n!==0) ? (dark()?'#94a3b8':'#94a3b8') : n>=7 ? (dark()?'#34d399':'#047857') : n>=5 ? (dark()?'#fbbf24':'#b45309') : (dark()?'#f87171':'#b91c1c');
+const gradeColor = n => n>=7 ? (dark()?'#34d399':'#047857') : n>=5 ? (dark()?'#fbbf24':'#b45309') : (dark()?'#f87171':'#b91c1c');
+const el = id => document.getElementById(id);
 const sum = arr => arr.reduce((a,b)=>a+b,0);
-const nv = v => (v===null||v===undefined) ? null : Number(v);
 
 const PALETTES = {
   light: {n1:'#4f46e5',n2:'#ea580c',n3:'#059669',asist:'#0284c7',epp:'#9333ea',partic:'#0d9488',tt:'#d97706',examen:'#e11d48',tp:'#059669'},
@@ -319,32 +324,23 @@ const PALETTES = {
 };
 const pal = () => PALETTES[dark()?'dark':'light'];
 
-// Mapeo de texto TT → número (usando N1 como referencia aproximada)
+// Conversión texto → número (misma lógica que simulador)
 function ttTextToNum(txt, n1) {
-  if (!txt || txt==='N') return 0;
   if (txt==='T')  return 10;
   if (txt==='T1') return n1>=9?9:8;
   if (txt==='T2') return n1>=7?7:6;
   if (txt==='T3') return n1>=5?5:4;
   if (txt==='T4') return n1<2?1:n1<3?2:3;
-  // Si ya es número (gviz a veces devuelve el valor calculado)
-  const num = parseFloat(txt);
-  return isNaN(num) ? 0 : num;
+  return 0;
 }
-
-// Mapeo de texto TP → número (usando N1)
 function tpTextToNum(txt, n1) {
-  if (!txt || txt==='N') return 0;
   if (txt==='E')  return 10;
   if (txt==='MB') return 9;
   if (txt==='B')  return n1>=8?8:7;
   if (txt==='R')  return n1>=6?6:5;
   if (txt==='I')  return n1<2?1:n1<3?2:n1<4?3:4;
-  const num = parseFloat(txt);
-  return isNaN(num) ? 0 : num;
+  return 0;
 }
-
-const TT_LABELS = {T:"A tiempo",T1:"1 clase tarde",T2:"2 clases tarde",T3:"3 clases tarde",T4:"4 clases tarde",N:"No entregado"};
 
 // ── CHARTS ──
 let charts = {};
@@ -353,8 +349,51 @@ function makeDonut(id, data, colors, cutout='70%') {
   charts[id] = new Chart(el(id).getContext('2d'), {
     type:'doughnut',
     data:{datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:0}]},
-    options:{cutout,plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:300},responsive:true,maintainAspectRatio:false}
+    options:{cutout,plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:150},responsive:true,maintainAspectRatio:false}
   });
+}
+function upChart(c, data, colors) {
+  c.data.datasets[0].data = data;
+  if (colors) c.data.datasets[0].backgroundColor = colors;
+  c.update();
+}
+
+// Init charts con vacío
+const p0 = PALETTES.light, ec0 = emptyColor();
+const cFinal = makeDonut('chartFinal',[0,0,0,10],[p0.n1,p0.n2,p0.n3,ec0],'65%');
+const cN1    = makeDonut('chartN1',   [0,0,0,10],[p0.asist,p0.epp,p0.partic,ec0]);
+const cN2    = makeDonut('chartN2',   [0,0,10],  [p0.tt,p0.examen,ec0]);
+const cN3    = makeDonut('chartN3',   Array(9).fill(0),[...Array(8).fill(p0.tp),ec0]);
+
+// Construir grids TT y TP (solo display, sin interacción)
+const ttGrid = el('tt-grid'), ttBlocks = el('tt-blocks');
+for (let i=0; i<4; i++) {
+  const b = document.createElement('button');
+  b.className = 'tp-btn'; b.textContent = i+1; b.id = `ttb-${i}`;
+  ttGrid.appendChild(b);
+  const w = document.createElement('div');
+  w.className = 'tp-desempeno-block'; w.id = `ttd-${i}`; w.style.display = 'none';
+  const l = document.createElement('div');
+  l.className = 'tp-desempeno-label'; l.id = `ttd-label-${i}`; l.textContent = `TT ${i+1}: Puntualidad`;
+  w.appendChild(l);
+  ttBlocks.appendChild(w);
+}
+
+const tpBarsContainer = el('tp-bars');
+const tpGrid = el('tp-grid');
+for (let i=0; i<8; i++) {
+  const b = document.createElement('button');
+  b.className = 'tp-btn'; b.textContent = i+1; b.id = `tpb-${i}`;
+  tpGrid.appendChild(b);
+  const row = document.createElement('div');
+  row.className = 'nota-bar-row';
+  row.innerHTML = `
+    <div class="nota-bar-header">
+      <span class="nota-bar-name">TP ${i+1} <span>12.5%</span></span>
+      <span class="nota-bar-val"><span id="lbl-tp-val-${i}">0.0</span> <span id="lbl-tp-ap-${i}" style="opacity:0.6;font-weight:400">(+0.00)</span></span>
+    </div>
+    <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-tp-${i}" style="background:var(--c-tp);width:0%"></div></div>`;
+  tpBarsContainer.appendChild(row);
 }
 
 // ── DATA ──
@@ -363,9 +402,8 @@ let currentGroup = 'LM';
 let selectorOpen = true;
 
 async function fetchSheet(suffix) {
-  const sheetSuffix = suffix === 'LM' ? 'L/M' : 'M/J';
-  const name = encodeURIComponent(`3er Bimestre (${sheetSuffix})`);
-  // Forzamos rango A:AX para que gviz incluya todas las columnas aunque estén vacías
+  const sheetName = suffix==='LM' ? 'L/M' : 'M/J';
+  const name = encodeURIComponent(`3er Bimestre (${sheetName})`);
   const res = await fetch(`${BASE_URL}${name}&range=A:AX`);
   const text = await res.text();
   const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/)[1]);
@@ -374,95 +412,51 @@ async function fetchSheet(suffix) {
 
 function parseStudents(rows) {
   const students = [];
-  // Estructura confirmada del xlsx (0-based cols):
-  // Col 1  = Nombre
-  // Col 3,5,7...29 (impares) = Asistencia diaria (P/T/R/A/-)
-  // Col 4,6,8...30 (pares)   = Participación (E/MB/B/R/I/N/-)
-  // Col 31 = ASIST (número calculado)
-  // Col 32 = EPP % (número 0-1, o vacío)
-  // Col 33 = N1 (número calculado)
-  // Col 34-37 = TT1-TT4 (texto: T/T1/T2/T3/T4/N o vacío)
-  // Col 38 = Examen (número)
-  // Col 39 = N2 (número calculado)
-  // Col 40-47 = TP1-TP8 (texto: E/MB/B/R/I/N o vacío)
-  // Col 48 = N3 (número calculado)
-  // Col 49 = NF (número calculado)
-  // Fila 21 (idx 20) = headers, fila 22 (idx 21) = días, datos desde fila 23 (idx 22), de a 2 filas
-
-  for (let i = 2; i < rows.length; i += 2) {
-    const r  = rows[i];
-    const r2 = rows[i+1];
+  for (let i=2; i<rows.length; i+=2) {
+    const r = rows[i];
     if (!r || !r.c) continue;
-
-    const cv  = c => (r.c[c]  && r.c[c].v  !== null && r.c[c].v  !== undefined) ? r.c[c].v  : null;
-    const cv2 = c => (r2 && r2.c && r2.c[c] && r2.c[c].v !== null) ? r2.c[c].v : null;
-
+    const cv = c => (r.c[c] && r.c[c].v!==null && r.c[c].v!==undefined) ? r.c[c].v : null;
     const nombre = cv(1);
-    if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') continue;
+    if (!nombre || typeof nombre !== 'string' || !nombre.trim()) continue;
 
-    // Notas calculadas directamente de la planilla
-    const asist  = nv(cv(31));
-    const eppRaw = cv(32); // puede ser número 0-1, string '%', o null
-    const n1     = nv(cv(33));
-    const examen = nv(cv(38));
-    const n2     = nv(cv(39));
-    const n3     = nv(cv(48));
-    const nf     = nv(cv(49));
-
-    // EPP: normalizar a 0-1
-    let eppPct = null;
+    const asist  = cv(31) !== null ? Number(cv(31)) : 0;
+    const eppRaw = cv(32);
+    let eppPct = 0;
     if (eppRaw !== null && eppRaw !== '') {
       const num = parseFloat(String(eppRaw).replace('%',''));
       if (!isNaN(num)) eppPct = num > 1 ? num/100 : num;
     }
+    const n1  = cv(33) !== null ? Number(cv(33)) : 0;
+    const n2  = cv(39) !== null ? Number(cv(39)) : 0;
+    const n3  = cv(48) !== null ? Number(cv(48)) : 0;
+    const nf  = cv(49) !== null ? Number(cv(49)) : 0;
 
-    // TTs: texto → número usando N1
-    const n1val = n1 || 0;
-    const ttTexts = [cv(34), cv(35), cv(36), cv(37)];
-    const ttNums  = ttTexts.map(t => t ? ttTextToNum(String(t), n1val) : null);
+    // TTs: texto en cols 34-37
+    const ttTexts = [cv(34), cv(35), cv(36), cv(37)].map(v => v ? String(v) : null);
+    const ttNums  = ttTexts.map(t => t ? ttTextToNum(t, n1) : 0);
 
-    // TPs: texto → número usando N1
+    // TPs: texto en cols 40-47
     const tpTexts = [];
     const tpNums  = [];
-    for (let c = 40; c <= 47; c++) {
+    for (let c=40; c<=47; c++) {
       const t = cv(c);
       tpTexts.push(t ? String(t) : null);
-      tpNums.push(t ? tpTextToNum(String(t), n1val) : null);
+      tpNums.push(t ? tpTextToNum(String(t), n1) : 0);
     }
 
-    // Asistencia diaria
-    const diasAsist = [];
-    for (let c = 3; c <= 29; c += 2) {
-      const v = cv(c);
-      if (v && v !== '-') diasAsist.push(String(v));
-    }
+    // Examen: col 38
+    const examen = cv(38) !== null ? Number(cv(38)) : 0;
 
-    // Participación: deducida de N1, asist y EPP
-    const eppNum = eppPct !== null ? eppPct * 10 : 0;
-    const n1num  = n1 ?? 0;
-    const particProm = Math.max(0, Math.min(10, (n1num - (asist??0)*0.2 - eppNum*0.2) / 0.6));
+    // Participación deducida de N1
+    const eppVal  = eppPct * 10;
+    const particVal = Math.max(0, Math.min(10, (n1 - asist*0.2 - eppVal*0.2) / 0.6));
 
-    students.push({
-      nombre: nombre.trim(),
-      asist:  asist  ?? 0,
-      eppPct,
-      n1:     n1     ?? 0,
-      particProm,
-      ttTexts,
-      ttNums,
-      examen: examen ?? 0,
-      n2:     n2     ?? 0,
-      tpTexts,
-      tpNums,
-      n3:     n3     ?? 0,
-      nf:     nf     ?? 0,
-      diasAsist
-    });
+    students.push({ nombre: nombre.trim(), asist, eppPct, n1, particVal, ttTexts, ttNums, examen, n2, tpTexts, tpNums, n3, nf });
   }
   return students;
 }
 
-// ── UI ──
+// ── UI SELECTOR ──
 function toggleSelector() {
   selectorOpen = !selectorOpen;
   el('selector-body').classList.toggle('open', selectorOpen);
@@ -471,23 +465,15 @@ function toggleSelector() {
 
 async function selectGroup(suffix) {
   currentGroup = suffix;
-  document.querySelectorAll('.group-tab').forEach(t => {
-    t.classList.toggle('active', (suffix==='LM') === t.textContent.includes('Lunes'));
-  });
+  document.querySelectorAll('.group-tab').forEach(t =>
+    t.classList.toggle('active', (suffix==='LM') === t.textContent.includes('Lunes'))
+  );
   el('student-list').innerHTML = '<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
-
   if (!allData[suffix].length) {
     try {
-      const rows = await fetchSheet(suffix);
-      allData[suffix] = parseStudents(rows);
-    console.log('Estudiantes cargados:', allData[suffix].map(s => ({
-      nombre: s.nombre,
-      ttTexts: s.ttTexts,
-      tpTexts: s.tpTexts,
-      n1: s.n1, n2: s.n2, n3: s.n3, nf: s.nf
-    })));
+      allData[suffix] = parseStudents(await fetchSheet(suffix));
     } catch(e) {
-      el('student-list').innerHTML = '<div class="state-msg">Error al cargar. Verificá que la planilla sea pública.</div>';
+      el('student-list').innerHTML = '<div class="state-msg">Error al cargar datos.</div>';
       return;
     }
   }
@@ -499,119 +485,89 @@ function renderList() {
   const students = allData[currentGroup];
   if (!students.length) { list.innerHTML = '<div class="state-msg">Sin datos.</div>'; return; }
   list.innerHTML = '';
-  students.forEach((s, i) => {
+  students.forEach((s,i) => {
     const btn = document.createElement('button');
     btn.className = 'student-btn';
-    const gc = gradeColor(s.nf);
-    btn.innerHTML = `<span>${s.nombre}</span><span class="student-nota" style="color:${gc}">${fmt(s.nf)}</span>`;
-    btn.onclick = () => { showProfile(i); };
+    btn.innerHTML = `<span>${s.nombre}</span><span class="student-nota" style="color:${gradeColor(s.nf)}">${fmt(s.nf)}</span>`;
+    btn.onclick = () => showProfile(i);
     list.appendChild(btn);
   });
 }
 
+// ── MOSTRAR PERFIL (render idéntico al simulador) ──
 function showProfile(idx) {
-  // Marcar activo en lista
   document.querySelectorAll('.student-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
   el('sel-name').textContent = allData[currentGroup][idx].nombre;
-
-  // Cerrar selector
   selectorOpen = false;
   el('selector-body').classList.remove('open');
   el('sel-chevron').classList.remove('open');
-
-  // Mostrar perfil
   el('empty-state').style.display = 'none';
   el('perfil-wrap').classList.add('visible');
 
   const s = allData[currentGroup][idx];
-  const p = pal();
-  const ec = emptyColor();
+  const p = pal(), ec = emptyColor();
 
-  const n1 = s.n1 || 0;
-  const n2 = s.n2 || 0;
-  const n3 = s.n3 || 0;
-  const nf = s.nf || 0;
-  const fc = gradeColor(nf);
-
-  // ── N1 ──
-  const asistVal  = s.asist || 0;
-  const eppVal    = s.eppPct !== null ? s.eppPct * 10 : 0;
-  const particVal = s.particProm || 0;
-  const aAsist    = asistVal * 0.2;
-  const aEpp      = eppVal   * 0.2;
+  const n1 = s.n1, n2 = s.n2, n3 = s.n3, nf = s.nf;
+  const asistVal  = s.asist;
+  const eppVal    = s.eppPct * 10;
+  const particVal = s.particVal;
+  const aAsist    = asistVal  * 0.2;
+  const aEpp      = eppVal    * 0.2;
   const aPartic   = particVal * 0.6;
 
+  // ── N1 ── (mismo formato que simulador)
   el('val-n1').textContent = fmt(n1);
   el('val-n1').style.color = gradeColor(n1);
-  // Asistencia: en puntos sobre 10 (igual que slider muestra %)
-  el('disp-asist').textContent   = `${Math.round(asistVal*10)}%`;
-  el('fill-asist').style.width   = `${asistVal*10}%`;
-  el('aporte-asist').textContent = `(+${aAsist.toFixed(2)})`;
-  // EPP: en porcentaje
-  el('disp-epp').textContent   = s.eppPct !== null ? `${Math.round(s.eppPct*100)}%` : '0%';
-  el('fill-epp').style.width   = s.eppPct !== null ? `${s.eppPct*100}%` : '0%';
-  el('aporte-epp').textContent = `(+${aEpp.toFixed(2)})`;
-  // Participación: valor numérico deducido (0-10)
-  el('disp-partic').textContent  = `${fmt(particVal)}`;
-  el('fill-partic').style.width  = `${Math.min(particVal*10,100)}%`;
+  el('disp-asist').textContent    = `${Math.round(asistVal*10)}%`;
+  el('fill-asist').style.width    = `${asistVal*10}%`;
+  el('aporte-asist').textContent  = `(+${aAsist.toFixed(2)})`;
+  el('disp-epp').textContent      = `${Math.round(s.eppPct*100)}%`;
+  el('fill-epp').style.width      = `${s.eppPct*100}%`;
+  el('aporte-epp').textContent    = `(+${aEpp.toFixed(2)})`;
+  el('disp-partic').textContent   = `${fmt(particVal)}`;
+  el('fill-partic').style.width   = `${Math.min(particVal*10,100)}%`;
   el('aporte-partic').textContent = `(+${aPartic.toFixed(2)})`;
-  makeDonut('chartN1',[aAsist,aEpp,aPartic,Math.max(0,10-aAsist-aEpp-aPartic)],[p.asist,p.epp,p.partic,ec]);
+  upChart(cN1,[aAsist,aEpp,aPartic,Math.max(0,10-aAsist-aEpp-aPartic)],[p.asist,p.epp,p.partic,ec]);
 
   // ── N2 ──
-  const ttNums = s.ttNums.map(v => v !== null ? v : 0);
+  const ttNums = s.ttNums;
   const ttProm = sum(ttNums) / 4;
-  const exVal  = s.examen || 0;
-  const aTT    = ttProm * 0.3;
-  const aEx    = exVal  * 0.7;
-
-  el('val-n2').textContent = fmt(n2);
-  el('val-n2').style.color = gradeColor(n2);
-  el('seg-tt').textContent        = fmt(ttProm);
-  el('fill-tt').style.width       = `${ttProm*10}%`;
+  const aTT    = ttProm     * 0.3;
+  const aEx    = s.examen   * 0.7;
+  el('val-n2').textContent    = fmt(n2);
+  el('val-n2').style.color    = gradeColor(n2);
+  el('seg-tt').textContent    = fmt(ttProm);
+  el('fill-tt').style.width   = `${ttProm*10}%`;
   el('aporte-tt').textContent     = `(+${aTT.toFixed(2)})`;
-  el('disp-examen').textContent   = fmt(exVal);
-  el('fill-examen').style.width   = `${exVal*10}%`;
+  el('disp-examen').textContent   = fmt(s.examen);
+  el('fill-examen').style.width   = `${s.examen*10}%`;
   el('aporte-examen').textContent = `(+${aEx.toFixed(2)})`;
-
-  const ttDiv = el('tt-display');
-  ttDiv.innerHTML = '';
-  s.ttTexts.forEach((txt, i) => {
-    const row = document.createElement('div');
-    row.className = 'tt-row';
-    // null/undefined = no entregado; cualquier texto (T/T1/T2/T3/T4/N) = entregado
-    const entregado = txt !== null && txt !== undefined && txt !== '';
-    const numVal = s.ttNums[i];
-    row.innerHTML = `<span class="tt-num">TT ${i+1}</span><span class="tt-badge ${entregado?'entregado':''}">${entregado ? `${txt} (${fmt(numVal)})` : 'No entregado'}</span>`;
-    ttDiv.appendChild(row);
-  });
-  makeDonut('chartN2',[aTT,aEx,Math.max(0,10-aTT-aEx)],[p.tt,p.examen,ec]);
+  // TT buttons y bloques
+  for (let i=0; i<4; i++) {
+    const entregado = s.ttTexts[i] !== null;
+    el(`ttb-${i}`).classList.toggle('active', entregado);
+    el(`ttd-${i}`).style.display = entregado ? 'block' : 'none';
+    if (entregado) el(`ttd-label-${i}`).textContent = `TT ${i+1}: ${s.ttTexts[i]} (${fmt(s.ttNums[i])})`;
+  }
+  upChart(cN2,[aTT,aEx,Math.max(0,10-aTT-aEx)],[p.tt,p.examen,ec]);
 
   // ── N3 ──
-  const tpNums    = s.tpNums.map(v => v !== null ? v : 0);
+  const tpNums    = s.tpNums;
   const tpAportes = tpNums.map(v => v/8);
   const sumaTP    = sum(tpAportes);
-
   el('val-n3').textContent = fmt(n3);
   el('val-n3').style.color = gradeColor(n3);
-
-  const tpBars = el('tp-bars');
-  tpBars.innerHTML = '';
-  tpNums.forEach((v, i) => {
-    const txt = s.tpTexts[i];
-    const entregado = txt !== null && txt !== undefined && txt !== '';
-    const row = document.createElement('div');
-    row.className = 'nota-bar-row';
-    row.innerHTML = `
-      <div class="nota-bar-header">
-        <span class="nota-bar-name">TP ${i+1} <span>12.5%</span></span>
-        <span class="nota-bar-val" style="color:var(--c-tp)">${entregado ? `${txt} (${fmt(v)})` : '—'} <span style="opacity:0.6;font-weight:400">(+${(v/8).toFixed(2)})</span></span>
-      </div>
-      <div class="nota-bar-track"><div class="nota-bar-fill" style="background:var(--c-tp);width:${v*10}%"></div></div>`;
-    tpBars.appendChild(row);
-  });
-  makeDonut('chartN3',[...tpAportes,Math.max(0,10-sumaTP)],[...tpNums.map(v=>v>0?p.tp:ec),ec]);
+  for (let i=0; i<8; i++) {
+    const entregado = s.tpTexts[i] !== null;
+    el(`tpb-${i}`).classList.toggle('active', entregado);
+    el(`lbl-tp-val-${i}`).textContent = fmt(tpNums[i]);
+    el(`lbl-tp-ap-${i}`).textContent  = `(+${(tpNums[i]/8).toFixed(2)})`;
+    el(`fill-tp-${i}`).style.width    = `${tpNums[i]*10}%`;
+  }
+  upChart(cN3,[...tpAportes,Math.max(0,10-sumaTP)],[...tpNums.map((_,i)=>s.tpTexts[i]?p.tp:ec),ec]);
 
   // ── FINAL ──
+  const fc = gradeColor(nf);
   el('lbl-n1').textContent = fmt(n1);
   el('lbl-n2').textContent = fmt(n2);
   el('lbl-n3').textContent = fmt(n3);
@@ -621,25 +577,16 @@ function showProfile(idx) {
   el('lbl-final').textContent = fmt(nf);
   el('lbl-final').style.color = fc;
   const aN1=n1/3, aN2=n2/3, aN3=n3/3;
-  makeDonut('chartFinal',[aN1,aN2,aN3,Math.max(0,10-aN1-aN2-aN3)],[p.n1,p.n2,p.n3,ec],'65%');
+  upChart(cFinal,[aN1,aN2,aN3,Math.max(0,10-aN1-aN2-aN3)],[p.n1,p.n2,p.n3,ec],'65%');
 
-  // Scroll al perfil
-  el('perfil-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+  el('perfil-wrap').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-  if (el('perfil-wrap').classList.contains('visible')) {
-    const active = document.querySelector('.student-btn.active');
-    if (active) {
-      const idx = [...document.querySelectorAll('.student-btn')].indexOf(active);
-      showProfile(idx);
-    }
-  }
+  const active = document.querySelector('.student-btn.active');
+  if (active) showProfile([...document.querySelectorAll('.student-btn')].indexOf(active));
 });
 
-// Iniciar abierto
-el('selector-body').classList.add('open');
-el('sel-chevron').classList.add('open');
 selectGroup('LM');
 </script>
 </body>
