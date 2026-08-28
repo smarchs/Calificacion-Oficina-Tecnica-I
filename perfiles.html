@@ -492,6 +492,7 @@ function showProfile(idx) {
   el('perfil-wrap').classList.add('visible');
 
   const s = allData[currentGroup][idx];
+  console.log('showProfile s:', JSON.stringify({n1:s.n1,n2:s.n2,n3:s.n3,nf:s.nf,ttTexts:s.ttTexts,ttNums:s.ttNums,tpTexts:s.tpTexts,tpNums:s.tpNums}));
   const p = pal(), ec = emptyColor();
 
   const n1 = s.n1, n2 = s.n2, n3 = s.n3, nf = s.nf;
