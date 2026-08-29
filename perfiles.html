@@ -305,7 +305,7 @@
 
 <script>
 // ── CONFIG ──
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylWZrWZjUTPnT45Lbz3cAcuZwR-pN6MbtrAogPhcdGRN6SvT2HeA0ABzFQ-P-KeH-a/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF39X6cdu-bFRfc4feJs1DGJNNezFIFUkFNapRT8fge4WAcKyk5QI3lAD1q5_4ZzJs/exec';
 
 // ── UTILS (idénticos al simulador) ──
 const roundHalf = n => Math.round(n * 2) / 2;
@@ -412,7 +412,7 @@ function parseStudents(rows) {
     }
     const eppVal = eppPct * 10;
     const asist  = Number(s.asist) || 0;
-    const particVal = Math.max(0, Math.min(10, (n1 - asist*0.2 - eppVal*0.2) / 0.6));
+    const particVal = Number(s.partic) || 0;
 
     const ttTexts = [s.tt1, s.tt2, s.tt3, s.tt4].map(v => v ? String(v).trim() : null);
     const ttNums  = ttTexts.map(t => t ? ttTextToNum(t, n1) : 0);
