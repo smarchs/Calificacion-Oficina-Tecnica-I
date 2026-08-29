@@ -146,7 +146,6 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .perfil-wrap { display: none; }
-  .perfil-wrap.visible { display: block; }
   .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 12px; }
 </style>
 </head>
@@ -177,7 +176,7 @@
         <span>Martes y Jueves</span>
 
       </div>
-      <div class="selector-col-body" id="body-MJ"></div>
+      <div class="selector-col-body open" id="body-MJ"><div class="state-msg"><div class="spinner"></div>Cargando...</div></div>
     </div>
   </div>
 </div>
@@ -473,7 +472,7 @@ function showProfile(idx) {
   selectorOpen = false;
   el('selector-body').classList.remove('open');
   el('sel-chevron').classList.remove('open');
-  el('perfil-wrap').classList.add('visible');
+  el('perfil-wrap').style.display = 'block';
 
   const s = allData[currentGroup][idx];
   console.log('showProfile s:', JSON.stringify({n1:s.n1,n2:s.n2,n3:s.n3,nf:s.nf,ttTexts:s.ttTexts,ttNums:s.ttNums,tpTexts:s.tpTexts,tpNums:s.tpNums}));
