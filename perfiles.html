@@ -124,7 +124,7 @@
   .selector-divider { width: 1px; background: var(--border); flex-shrink: 0; }
   .selector-col-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 13px 14px; cursor: pointer; user-select: none;
+    padding: 13px 14px; user-select: none;
     font-size: 12px; font-weight: 700; color: var(--text);
   }
   .col-chevron { font-size: 12px; color: var(--muted); transition: transform 0.2s; }
@@ -163,9 +163,9 @@
 <div class="selector-card">
   <div class="selector-columns">
     <div class="selector-col" id="col-LM">
-      <div class="selector-col-header" onclick="toggleCol('LM')">
+      <div class="selector-col-header">
         <span>Lunes y Miércoles</span>
-        <span class="col-chevron open" id="chev-LM">▼</span>
+
       </div>
       <div class="selector-col-body open" id="body-LM">
         <div class="state-msg"><div class="spinner"></div>Cargando...</div>
@@ -173,9 +173,9 @@
     </div>
     <div class="selector-divider"></div>
     <div class="selector-col" id="col-MJ">
-      <div class="selector-col-header" onclick="toggleCol('MJ')">
+      <div class="selector-col-header">
         <span>Martes y Jueves</span>
-        <span class="col-chevron" id="chev-MJ">▼</span>
+
       </div>
       <div class="selector-col-body" id="body-MJ"></div>
     </div>
@@ -298,7 +298,7 @@
 </div><!-- /layout -->
 </div><!-- /perfil-wrap -->
 
-<div class="empty-state" id="empty-state">Seleccioná un estudiante para ver su perfil.</div>
+
 
 <script>
 // ── CONFIG ──
@@ -436,27 +436,18 @@ function parseStudents(rows) {
 }
 
 // ── UI SELECTOR ──
-async function toggleCol(suffix) {
+async function loadGroup(suffix) {
   const body = el(`body-${suffix}`);
-  const chev = el(`chev-${suffix}`);
-  const isOpen = body.classList.contains('open');
-  if (isOpen) {
-    body.classList.remove('open');
-    chev.classList.remove('open');
-  } else {
-    body.classList.add('open');
-    chev.classList.add('open');
-    if (!allData[suffix].length) {
-      body.innerHTML = '<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
-      try {
-        allData[suffix] = parseStudents(await fetchSheet(suffix));
-      } catch(e) {
-        body.innerHTML = '<div class="state-msg">Error al cargar datos.</div>';
-        return;
-      }
+  if (!allData[suffix].length) {
+    body.innerHTML = '<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
+    try {
+      allData[suffix] = parseStudents(await fetchSheet(suffix));
+    } catch(e) {
+      body.innerHTML = '<div class="state-msg">Error al cargar datos.</div>';
+      return;
     }
-    renderList(suffix);
   }
+  renderList(suffix);
 }
 
 function renderList(suffix) {
@@ -482,7 +473,6 @@ function showProfile(idx) {
   selectorOpen = false;
   el('selector-body').classList.remove('open');
   el('sel-chevron').classList.remove('open');
-  el('empty-state').style.display = 'none';
   el('perfil-wrap').classList.add('visible');
 
   const s = allData[currentGroup][idx];
@@ -569,8 +559,8 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
   if (active) showProfile([...document.querySelectorAll('.student-btn')].indexOf(active));
 });
 
-// Cargar LM al inicio
-toggleCol('LM');
+loadGroup('LM');
+loadGroup('MJ');
 </script>
 </body>
 </html>
