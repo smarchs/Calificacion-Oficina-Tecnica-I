@@ -119,34 +119,27 @@
     background: var(--card); border-radius: 14px; border: 1px solid var(--border);
     margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
   }
-  .selector-header {
+  .selector-columns { display: flex; }
+  .selector-col { flex: 1; min-width: 0; }
+  .selector-divider { width: 1px; background: var(--border); flex-shrink: 0; }
+  .selector-col-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 14px; cursor: pointer; user-select: none;
+    padding: 13px 14px; cursor: pointer; user-select: none;
+    font-size: 12px; font-weight: 700; color: var(--text);
   }
-  .selector-header-left { display: flex; flex-direction: column; gap: 2px; }
-  .selector-label-top { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
-  .selector-name { font-size: 13px; font-weight: 700; color: var(--text); }
-  .selector-chevron { font-size: 14px; color: var(--muted); transition: transform 0.2s; }
-  .selector-chevron.open { transform: rotate(180deg); }
-  .selector-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
-  .selector-body.open { display: block; }
-  .group-tabs { display: flex; gap: 6px; margin: 10px 0 10px; }
-  .group-tab {
-    flex: 1; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 500;
-    font-family: inherit; cursor: pointer; text-align: center; transition: all 0.12s;
-  }
-  .group-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
-  .student-list { display: flex; flex-direction: column; gap: 3px; max-height: 260px; overflow-y: auto; }
+  .col-chevron { font-size: 12px; color: var(--muted); transition: transform 0.2s; }
+  .col-chevron.open { transform: rotate(180deg); }
+  .selector-col-body { display: none; border-top: 1px solid var(--border); padding: 8px; max-height: 280px; overflow-y: auto; }
+  .selector-col-body.open { display: block; }
   .student-btn {
-    padding: 7px 10px; border-radius: 8px; border: 1px solid transparent;
+    padding: 7px 8px; border-radius: 8px; border: 1px solid transparent;
     background: transparent; color: var(--text); font-size: 12px; font-family: inherit;
     cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center;
-    transition: all 0.1s;
+    transition: all 0.1s; width: 100%;
   }
   .student-btn:hover { background: var(--surface); border-color: var(--border); }
   .student-btn.active { background: var(--surface); border-color: var(--accent); color: var(--accent); font-weight: 700; }
-  .student-nota { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .student-nota { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; margin-left: 6px; }
 
   .state-msg { text-align: center; padding: 24px; font-size: 12px; color: var(--muted); }
   .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 8px; }
@@ -161,26 +154,30 @@
 
 <header>
   <div class="label">Oficina Técnica I · 2026</div>
-  <h1>Perfiles de Estudiantes</h1>
+  <h1>Registro Estudiantil</h1>
   <p class="sub">Docente: Silva Sergio Marcelo</p>
+  <p class="sub">Seleccioná tu grupo y nombre para ver tu progreso en la asignatura.</p>
 </header>
 
 <!-- SELECTOR -->
 <div class="selector-card">
-  <div class="selector-header" onclick="toggleSelector()">
-    <div class="selector-header-left">
-      <span class="selector-label-top">Estudiante seleccionado</span>
-      <span class="selector-name" id="sel-name">Seleccioná un estudiante</span>
+  <div class="selector-columns">
+    <div class="selector-col" id="col-LM">
+      <div class="selector-col-header" onclick="toggleCol('LM')">
+        <span>Lunes y Miércoles</span>
+        <span class="col-chevron open" id="chev-LM">▼</span>
+      </div>
+      <div class="selector-col-body open" id="body-LM">
+        <div class="state-msg"><div class="spinner"></div>Cargando...</div>
+      </div>
     </div>
-    <span class="selector-chevron open" id="sel-chevron">▼</span>
-  </div>
-  <div class="selector-body open" id="selector-body">
-    <div class="group-tabs">
-      <button class="group-tab active" onclick="selectGroup('LM')">Lunes y Miércoles</button>
-      <button class="group-tab" onclick="selectGroup('MJ')">Martes y Jueves</button>
-    </div>
-    <div class="student-list" id="student-list">
-      <div class="state-msg"><div class="spinner"></div>Cargando...</div>
+    <div class="selector-divider"></div>
+    <div class="selector-col" id="col-MJ">
+      <div class="selector-col-header" onclick="toggleCol('MJ')">
+        <span>Martes y Jueves</span>
+        <span class="col-chevron" id="chev-MJ">▼</span>
+      </div>
+      <div class="selector-col-body" id="body-MJ"></div>
     </div>
   </div>
 </div>
@@ -439,47 +436,49 @@ function parseStudents(rows) {
 }
 
 // ── UI SELECTOR ──
-function toggleSelector() {
-  selectorOpen = !selectorOpen;
-  el('selector-body').classList.toggle('open', selectorOpen);
-  el('sel-chevron').classList.toggle('open', selectorOpen);
-}
-
-async function selectGroup(suffix) {
-  currentGroup = suffix;
-  document.querySelectorAll('.group-tab').forEach(t =>
-    t.classList.toggle('active', (suffix==='LM') === t.textContent.includes('Lunes'))
-  );
-  el('student-list').innerHTML = '<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
-  if (!allData[suffix].length) {
-    try {
-      allData[suffix] = parseStudents(await fetchSheet(suffix));
-    } catch(e) {
-      el('student-list').innerHTML = '<div class="state-msg">Error al cargar datos.</div>';
-      return;
+async function toggleCol(suffix) {
+  const body = el(`body-${suffix}`);
+  const chev = el(`chev-${suffix}`);
+  const isOpen = body.classList.contains('open');
+  if (isOpen) {
+    body.classList.remove('open');
+    chev.classList.remove('open');
+  } else {
+    body.classList.add('open');
+    chev.classList.add('open');
+    if (!allData[suffix].length) {
+      body.innerHTML = '<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
+      try {
+        allData[suffix] = parseStudents(await fetchSheet(suffix));
+      } catch(e) {
+        body.innerHTML = '<div class="state-msg">Error al cargar datos.</div>';
+        return;
+      }
     }
+    renderList(suffix);
   }
-  renderList();
 }
 
-function renderList() {
-  const list = el('student-list');
-  const students = allData[currentGroup];
-  if (!students.length) { list.innerHTML = '<div class="state-msg">Sin datos.</div>'; return; }
-  list.innerHTML = '';
+function renderList(suffix) {
+  const body = el(`body-${suffix}`);
+  const students = allData[suffix];
+  if (!students.length) { body.innerHTML = '<div class="state-msg">Sin datos.</div>'; return; }
+  body.innerHTML = '';
   students.forEach((s,i) => {
     const btn = document.createElement('button');
     btn.className = 'student-btn';
+    btn.dataset.suffix = suffix;
+    btn.dataset.idx = i;
     btn.innerHTML = `<span>${s.nombre}</span><span class="student-nota" style="color:${gradeColor(s.nf)}">${fmt(s.nf)}</span>`;
-    btn.onclick = () => showProfile(i);
-    list.appendChild(btn);
+    btn.onclick = () => { currentGroup = suffix; showProfile(i); };
+    body.appendChild(btn);
   });
 }
 
 // ── MOSTRAR PERFIL (render idéntico al simulador) ──
 function showProfile(idx) {
-  document.querySelectorAll('.student-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
-  el('sel-name').textContent = allData[currentGroup][idx].nombre;
+  document.querySelectorAll('.student-btn').forEach(b => b.classList.toggle('active', b.dataset.suffix===currentGroup && +b.dataset.idx===idx));
+  // nombre actualizado en el header del perfil
   selectorOpen = false;
   el('selector-body').classList.remove('open');
   el('sel-chevron').classList.remove('open');
@@ -570,7 +569,8 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
   if (active) showProfile([...document.querySelectorAll('.student-btn')].indexOf(active));
 });
 
-selectGroup('LM');
+// Cargar LM al inicio
+toggleCol('LM');
 </script>
 </body>
 </html>
