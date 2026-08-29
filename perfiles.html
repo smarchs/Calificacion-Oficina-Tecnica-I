@@ -469,9 +469,7 @@ function renderList(suffix) {
 function showProfile(idx) {
   document.querySelectorAll('.student-btn').forEach(b => b.classList.toggle('active', b.dataset.suffix===currentGroup && +b.dataset.idx===idx));
   // nombre actualizado en el header del perfil
-  selectorOpen = false;
-  el('selector-body').classList.remove('open');
-  el('sel-chevron').classList.remove('open');
+
   el('perfil-wrap').style.display = 'block';
 
   const s = allData[currentGroup][idx];
