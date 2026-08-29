@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>Perfiles · Oficina Técnica I</title>
+<title>Registro Estudiantil · Oficina Técnica I</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  /* ── IDÉNTICO AL SIMULADOR ── */
   :root {
     --bg: #f3f4f8; --surface: #ffffff; --card: #fafafc;
     --text: #0f172a; --muted: #64748b; --border: #e2e8f0;
@@ -127,8 +126,6 @@
     padding: 13px 14px; user-select: none;
     font-size: 12px; font-weight: 700; color: var(--text);
   }
-  .col-chevron { font-size: 12px; color: var(--muted); transition: transform 0.2s; }
-  .col-chevron.open { transform: rotate(180deg); }
   .selector-col-body { display: none; border-top: 1px solid var(--border); padding: 8px; max-height: 280px; overflow-y: auto; }
   .selector-col-body.open { display: block; }
   .student-btn {
@@ -146,7 +143,6 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .perfil-wrap { display: none; }
-  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 12px; }
   .nav-btn-wrap { text-align: center; padding: 32px 0 8px; }
   .nav-btn {
     display: inline-flex; align-items: center; gap: 8px;
@@ -314,8 +310,6 @@
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF39X6cdu-bFRfc4feJs1DGJNNezFIFUkFNapRT8fge4WAcKyk5QI3lAD1q5_4ZzJs/exec';
 
 // ── UTILS (idénticos al simulador) ──
-const roundHalf = n => Math.round(n * 2) / 2;
-const excelRound = (n, dec) => { const f = Math.pow(10,dec); return Math.round((n+Number.EPSILON)*f)/f; };
 const fmt = n => Math.abs(n-10)<1e-6 ? '10' : Number(n).toFixed(1);
 const dark = () => window.matchMedia('(prefers-color-scheme:dark)').matches;
 const emptyColor = () => dark() ? '#282d3f' : '#e2e8f0';
@@ -357,13 +351,6 @@ function makeDonut(id, data, colors, cutout='70%') {
     options:{cutout,plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:150},responsive:true,maintainAspectRatio:false}
   });
 }
-function upChart(c, data, colors) {
-  c.data.datasets[0].data = data;
-  if (colors) c.data.datasets[0].backgroundColor = colors;
-  c.update();
-}
-
-// Charts se crean en showProfile
 
 // Construir grids TT y TP (solo display, sin interacción)
 const ttGrid = el('tt-grid'), ttBlocks = el('tt-blocks');
@@ -399,7 +386,6 @@ for (let i=0; i<8; i++) {
 // ── DATA ──
 let allData = {LM:[], MJ:[]};
 let currentGroup = 'LM';
-let selectorOpen = true;
 
 async function fetchSheet(suffix) {
   const res = await fetch(`${APPS_SCRIPT_URL}?sheet=${suffix}`);
@@ -478,12 +464,9 @@ function renderList(suffix) {
 // ── MOSTRAR PERFIL (render idéntico al simulador) ──
 function showProfile(idx) {
   document.querySelectorAll('.student-btn').forEach(b => b.classList.toggle('active', b.dataset.suffix===currentGroup && +b.dataset.idx===idx));
-  // nombre actualizado en el header del perfil
-
   el('perfil-wrap').style.display = 'block';
 
   const s = allData[currentGroup][idx];
-  console.log('showProfile s:', JSON.stringify({n1:s.n1,n2:s.n2,n3:s.n3,nf:s.nf,ttTexts:s.ttTexts,ttNums:s.ttNums,tpTexts:s.tpTexts,tpNums:s.tpNums}));
   const p = pal(), ec = emptyColor();
 
   const n1 = s.n1, n2 = s.n2, n3 = s.n3, nf = s.nf;
@@ -563,7 +546,7 @@ function showProfile(idx) {
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
   const active = document.querySelector('.student-btn.active');
-  if (active) showProfile([...document.querySelectorAll('.student-btn')].indexOf(active));
+  if (active) showProfile(+active.dataset.idx);
 });
 
 loadGroup('LM');
