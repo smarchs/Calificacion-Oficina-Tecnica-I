@@ -453,8 +453,8 @@ const S = {
   ttSel:   [false,false,false,false],
   ttDesemp:["T","T","T","T"],
   examen: 0,
-  tpSel:   Array(8).fill(false),
-  tpDesemp:Array(8).fill("B")
+  tpSel:   Array(6).fill(false),
+  tpDesemp:Array(6).fill("B")
 };
 
 // ── Funciones de ajuste ──
@@ -500,7 +500,7 @@ const ec = emptyColor();
 const cFinal = makeDonut('chartFinal', [0,0,0,10], [p0.n1,p0.n2,p0.n3,ec], '65%');
 const cN1    = makeDonut('chartN1',    [0,0,0,10], [p0.asist,p0.epp,p0.partic,ec]);
 const cN2    = makeDonut('chartN2',    [0,0,10],   [p0.tt,p0.examen,ec]);
-const cN3    = makeDonut('chartN3',    Array(9).fill(0), [...Array(8).fill(p0.tp),ec]);
+const cN3    = makeDonut('chartN3',    Array(7).fill(0), [...Array(6).fill(p0.tp),ec]);
 
 // ── Construcción de UI dinámica ──
 
@@ -567,7 +567,7 @@ for (let i = 0; i < 4; i++) {
 
 // TP Grid
 const tpG = el('tp-grid'), tpD = el('tp-desempenos');
-for (let i = 0; i < 8; i++) {
+for (let i = 0; i < 6; i++) {
   const b = document.createElement('button');
   b.className = 'tp-btn'; b.textContent = i+1; b.id = `tpb-${i}`;
   b.onclick = () => { S.tpSel[i] = !S.tpSel[i]; render(); };
@@ -584,12 +584,12 @@ for (let i = 0; i < 8; i++) {
 
 // Barras de TPs
 const tpBarsContainer = el('tp-bars');
-for (let i = 0; i < 8; i++) {
+for (let i = 0; i < 6; i++) {
   const row = document.createElement('div');
   row.className = 'nota-bar-row';
   row.innerHTML = `
     <div class="nota-bar-header">
-      <span class="nota-bar-name">TP ${i+1} <span>12.5%</span></span>
+      <span class="nota-bar-name">TP ${i+1} <span>16.7%</span></span>
       <span class="nota-bar-val"><span id="lbl-tp-val-${i}">0.0</span> <span id="lbl-tp-ap-${i}" style="opacity:0.6;font-weight:400">(+0.00)</span></span>
     </div>
     <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-tp-${i}" style="background:var(--c-tp);width:0%"></div></div>`;
@@ -626,8 +626,8 @@ function render() {
 
   // Nota 3
   const tpNums    = S.tpDesemp.map((d,i) => S.tpSel[i] ? adjTP(d,n1) : 0);
-  const n3        = excelRound(sum(tpNums) / 8, 1);
-  const tpAportes = tpNums.map(v => v / 8);
+  const n3        = excelRound(sum(tpNums) / 6, 1);
+  const tpAportes = tpNums.map(v => v / 6);
 
   // Nota Final
   const nf = roundHalf((n1+n2+n3)/3);
@@ -666,11 +666,11 @@ function render() {
   el('val-n3').textContent = fmt(n3);
   el('val-n3').style.color = gradeColor(n3);
   const sumaTP = sum(tpAportes);
-  for (let i=0; i<8; i++) {
+  for (let i=0; i<6; i++) {
     el(`tpb-${i}`).classList.toggle('active', S.tpSel[i]);
     el(`tpd-${i}`).style.display = S.tpSel[i] ? 'block' : 'none';
     el(`lbl-tp-val-${i}`).textContent = S.tpSel[i] ? fmt(tpNums[i]) : '0.0';
-    el(`lbl-tp-ap-${i}`).textContent  = `(+${(tpNums[i]/8).toFixed(2)})`;
+    el(`lbl-tp-ap-${i}`).textContent  = `(+${(tpNums[i]/6).toFixed(2)})`;
     el(`fill-tp-${i}`).style.width    = S.tpSel[i] ? `${tpNums[i]*10}%` : '0%';
   }
   upChart(cN3, [...tpAportes, Math.max(0, 10-sumaTP)],
