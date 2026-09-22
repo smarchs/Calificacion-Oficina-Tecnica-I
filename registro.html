@@ -198,21 +198,21 @@
     <div class="card-title">Nota 1: Compromiso</div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">Asistencia <span>20%</span></span>
+        <span class="nota-bar-name">Asistencia <span>25%</span></span>
         <span class="nota-bar-val"><span id="disp-asist">0%</span> <span id="aporte-asist" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-asist" style="background:var(--c-asist);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">EPP <span>20%</span></span>
+        <span class="nota-bar-name">EPP <span>10%</span></span>
         <span class="nota-bar-val"><span id="disp-epp">0%</span> <span id="aporte-epp" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-epp" style="background:var(--c-epp);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">Participación <span>60%</span></span>
+        <span class="nota-bar-name">Participación <span>65%</span></span>
         <span class="nota-bar-val"><span id="disp-partic">0.0</span> <span id="aporte-partic" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-partic" style="background:var(--c-partic);width:0%"></div></div>
@@ -474,7 +474,7 @@ function showProfile(idx) {
   const eppVal    = s.eppPct * 10;
   const particVal = s.particVal;
   const aAsist    = asistVal  * 0.2;
-  const aEpp      = eppVal    * 0.2;
+  const aEpp      = eppVal    * 0.1;
   const aPartic   = particVal * 0.6;
 
   // ── N1 ── (mismo formato que simulador)
