@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>OT·I — Arcade</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --bg: #0a0a0f;
+  --panel: #12121a;
+  --border: #2a2a3a;
+  --text: #e0e0f0;
+  --muted: #5a5a7a;
+  --cyan: #00f5ff;
+  --purple: #b44fff;
+  --yellow: #ffe600;
+  --green: #00ff88;
+  --red: #ff3355;
+  --orange: #ff8800;
+  --pink: #ff44aa;
+
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  padding: 16px;
+  image-rendering: pixelated;
+}
+
+/* scanline overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+  pointer-events: none; z-index: 9999;
+}
+
+/* ── HEADER ── */
+.arcade-header {
+  text-align: center;
+  padding: 24px 0 20px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 24px;
+}
+.arcade-title {
+  font-family: var(--font-pixel);
+  font-size: clamp(10px, 3vw, 16px);
+  color: var(--cyan);
+  text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,255,0.3);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+.arcade-sub {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+@keyframes glow-pulse {
+  0%,100% { text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,255,0.3); }
+  50%      { text-shadow: 0 0 30px var(--cyan), 0 0 60px rgba(0,245,255,0.5), 0 0 80px rgba(0,245,255,0.2); }
+}
+
+/* ── SELECTOR ── */
+.selector-panel {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 20px;
+  max-width: 600px;
+  margin-left: auto; margin-right: auto;
+}
+.selector-label {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  color: var(--purple);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+.group-tabs {
+  display: flex; gap: 8px; margin-bottom: 12px;
+}
+.group-tab {
+  flex: 1; padding: 8px; background: var(--bg); border: 2px solid var(--border);
+  color: var(--muted); font-family: var(--font-pixel); font-size: 7px;
+  cursor: pointer; text-align: center; transition: all 0.1s; letter-spacing: 0.5px;
+}
+.group-tab.active {
+  border-color: var(--cyan); color: var(--cyan);
+  box-shadow: 0 0 10px rgba(0,245,255,0.3);
+}
+.player-list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px;
+  max-height: 240px; overflow-y: auto;
+}
+.player-btn {
+  padding: 8px 10px; background: var(--bg); border: 2px solid var(--border);
+  color: var(--text); font-family: var(--font-mono); font-size: 12px;
+  cursor: pointer; text-align: left; display: flex; justify-content: space-between;
+  align-items: center; transition: all 0.1s;
+}
+.player-btn:hover { border-color: var(--purple); color: var(--purple); }
+.player-btn.active { border-color: var(--yellow); color: var(--yellow); box-shadow: 0 0 10px rgba(255,230,0,0.2); }
+.player-lvl { font-family: var(--font-pixel); font-size: 7px; }
+.state-msg { text-align: center; padding: 20px; font-size: 11px; color: var(--muted); }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── GAME SCREEN ── */
+.game-screen { display: none; max-width: 600px; margin: 0 auto; }
+.game-screen.visible { display: block; }
+
+/* Player card */
+.player-card {
+  background: var(--panel);
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 20px rgba(0,245,255,0.15), inset 0 0 20px rgba(0,245,255,0.03);
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.player-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  animation: scan 3s linear infinite;
+}
+@keyframes scan { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+
+.player-name {
+  font-family: var(--font-pixel);
+  font-size: clamp(8px, 2.5vw, 12px);
+  color: var(--yellow);
+  text-shadow: 0 0 10px rgba(255,230,0,0.5);
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+/* Level display */
+.level-row {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 16px;
+}
+.level-badge {
+  font-family: var(--font-pixel);
+  font-size: clamp(28px, 8vw, 48px);
+  color: var(--cyan);
+  text-shadow: 0 0 30px var(--cyan);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.level-badge span { font-size: 0.4em; color: var(--muted); display: block; margin-bottom: 4px; }
+.level-info { flex: 1; }
+.xp-label {
+  font-size: 10px; color: var(--muted); margin-bottom: 6px; letter-spacing: 1px;
+}
+.xp-bar-track {
+  height: 12px; background: var(--bg); border: 2px solid var(--border); position: relative; overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple));
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+.xp-bar-fill::after {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0; width: 4px;
+  background: white; opacity: 0.6;
+  animation: xp-blink 0.5s ease infinite;
+}
+@keyframes xp-blink { 0%,100% { opacity: 0.6; } 50% { opacity: 0; } }
+.xp-text { font-size: 10px; color: var(--cyan); margin-top: 4px; text-align: right; }
+
+.motivational {
+  font-size: 11px; color: var(--green);
+  border-left: 3px solid var(--green);
+  padding: 8px 10px;
+  background: rgba(0,255,136,0.05);
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+/* ── STATS GRID ── */
+.stats-section-title {
+  font-family: var(--font-pixel); font-size: 8px;
+  color: var(--purple); letter-spacing: 1px;
+  margin: 20px 0 10px;
+}
+
+.stat-block {
+  background: var(--panel); border: 2px solid var(--border);
+  padding: 12px 14px; margin-bottom: 8px;
+}
+.stat-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+}
+.stat-name { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+.stat-val { font-family: var(--font-pixel); font-size: 10px; }
+.stat-bar-track {
+  height: 6px; background: var(--bg); border: 1px solid var(--border); overflow: hidden;
+}
+.stat-bar-fill { height: 100%; transition: width 0.6s ease; }
+
+/* ── ACHIEVEMENTS ── */
+.achievements-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px;
+  margin-top: 8px;
+}
+.achievement {
+  background: var(--panel); border: 2px solid var(--border);
+  padding: 10px; text-align: center; position: relative;
+  transition: all 0.2s;
+}
+.achievement.unlocked {
+  border-color: var(--yellow);
+  box-shadow: 0 0 12px rgba(255,230,0,0.2);
+}
+.achievement.locked { opacity: 0.35; filter: grayscale(1); }
+.ach-icon { font-size: 24px; margin-bottom: 6px; display: block; }
+.ach-name { font-family: var(--font-pixel); font-size: 6px; color: var(--yellow); letter-spacing: 0.5px; margin-bottom: 4px; }
+.ach-desc { font-size: 9px; color: var(--muted); line-height: 1.4; }
+
+/* ── NOTA FINAL BIG ── */
+.final-display {
+  text-align: center; padding: 20px;
+  background: var(--panel); border: 2px solid var(--yellow);
+  box-shadow: 0 0 30px rgba(255,230,0,0.15);
+  margin-bottom: 16px;
+}
+.final-label { font-family: var(--font-pixel); font-size: 8px; color: var(--muted); margin-bottom: 8px; }
+.final-val { font-family: var(--font-pixel); font-size: clamp(32px,10vw,56px); line-height: 1; }
+.final-rank { font-size: 11px; color: var(--muted); margin-top: 6px; letter-spacing: 1px; }
+
+@media (min-width: 700px) {
+  body { padding: 24px; }
+  .arcade-title { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="arcade-header">
+  <div class="arcade-title">OFICINA TÉCNICA I</div>
+  <div class="arcade-sub">▶ SELECCIONÁ TU PERSONAJE ◀</div>
+</div>
+
+<!-- SELECTOR -->
+<div class="selector-panel">
+  <div class="selector-label">// GRUPO</div>
+  <div class="group-tabs">
+    <button class="group-tab active" onclick="selectGroup('LM')">L · M</button>
+    <button class="group-tab" onclick="selectGroup('MJ')">M · J</button>
+  </div>
+  <div class="selector-label">// JUGADOR</div>
+  <div class="player-list" id="player-list">
+    <div class="state-msg"><div class="spinner"></div>Cargando...</div>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="game-screen" id="game-screen">
+
+  <div class="player-card">
+    <div class="player-name" id="g-name">—</div>
+    <div class="level-row">
+      <div class="level-badge"><span>NIVEL</span><span id="g-level">—</span></div>
+      <div class="level-info">
+        <div class="xp-label">XP HACIA NIVEL <span id="g-next">—</span></div>
+        <div class="xp-bar-track"><div class="xp-bar-fill" id="g-xpbar" style="width:0%"></div></div>
+        <div class="xp-text"><span id="g-xp-cur">—</span> / <span id="g-xp-max">—</span> XP</div>
+      </div>
+    </div>
+    <div class="motivational" id="g-motivation">—</div>
+  </div>
+
+  <div class="final-display">
+    <div class="final-label">// PUNTUACIÓN FINAL</div>
+    <div class="final-val" id="g-final" style="color:var(--cyan)">—</div>
+    <div class="final-rank" id="g-rank">—</div>
+  </div>
+
+  <div class="stats-section-title">▸ ESTADÍSTICAS DE COMPROMISO</div>
+
+  <div class="stat-block">
+    <div class="stat-header">
+      <span class="stat-name">Asistencia <span style="color:var(--muted);font-size:9px">20%</span></span>
+      <span class="stat-val" id="g-asist" style="color:var(--cyan)">—</span>
+    </div>
+    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-asist" style="background:var(--cyan);width:0%"></div></div>
+  </div>
+
+  <div class="stat-block">
+    <div class="stat-header">
+      <span class="stat-name">EPP <span style="color:var(--muted);font-size:9px">20%</span></span>
+      <span class="stat-val" id="g-epp" style="color:var(--purple)">—</span>
+    </div>
+    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-epp" style="background:var(--purple);width:0%"></div></div>
+  </div>
+
+  <div class="stat-block">
+    <div class="stat-header">
+      <span class="stat-name">Participación <span style="color:var(--muted);font-size:9px">60%</span></span>
+      <span class="stat-val" id="g-partic" style="color:var(--green)">—</span>
+    </div>
+    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-partic" style="background:var(--green);width:0%"></div></div>
+  </div>
+
+  <div class="stats-section-title">▸ ESTADÍSTICAS DE TEORÍA</div>
+
+  <div class="stat-block">
+    <div class="stat-header">
+      <span class="stat-name">Entregas TT <span style="color:var(--muted);font-size:9px">30%</span></span>
+      <span class="stat-val" id="g-tt" style="color:var(--yellow)">—</span>
+    </div>
+    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-tt" style="background:var(--yellow);width:0%"></div></div>
+  </div>
+
+  <div class="stat-block">
+    <div class="stat-header">
+      <span class="stat-name">Examen <span style="color:var(--muted);font-size:9px">70%</span></span>
+      <span class="stat-val" id="g-exam" style="color:var(--orange)">—</span>
+    </div>
+    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-exam" style="background:var(--orange);width:0%"></div></div>
+  </div>
+
+  <div class="stats-section-title">▸ ESTADÍSTICAS DE PRÁCTICA</div>
+  <div id="tp-stat-blocks"></div>
+
+  <div class="stats-section-title">▸ LOGROS</div>
+  <div class="achievements-grid" id="achievements"></div>
+
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNyF__3pe3B04CQVqgT__Bsly2KvkDjuHE-nG3PANiuw5ddrAqwH4cMQN_9MyVcqk/exec';
+
+const el = id => document.getElementById(id);
+const fmt = n => Math.abs(n-10)<1e-6 ? '10' : Number(n).toFixed(1);
+
+function gradeColor(n) {
+  if (n >= 8) return 'var(--green)';
+  if (n >= 6) return 'var(--cyan)';
+  if (n >= 4) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function tpTextToNum(txt, n1) {
+  if (txt==='E')  return 10;
+  if (txt==='MB') return 9;
+  if (txt==='B')  return n1>=8?8:7;
+  if (txt==='R')  return n1>=6?6:5;
+  if (txt==='I')  return n1<2?1:n1<3?2:n1<4?3:4;
+  return 0;
+}
+
+const MOTIVATIONS = {
+  high:   ["¡NIVEL MÁXIMO EN VISTA! Seguí así y nadie te para.", "Tu compromiso es legendario. Los TPs hablan solos.", "Sos el tipo de estudiante que hace subir el promedio de todos."],
+  mid:    ["Estás en camino. Un poco más de participación y subís de nivel.", "Tus TPs muestran que sabés. Ahora falta llevar eso al examen.", "La constancia es tu superpoder. Seguí sumando XP clase a clase."],
+  low:    ["Cada clase que venís es XP que suma. No te rindas.", "Un TP más y la balanza empieza a moverse. Vos podés.", "Empezar de cero es válido. Lo que importa es lo que hacés de acá en adelante."],
+  nodata: ["Todavía no hay datos cargados. ¡Vení a clase y empezá a sumar XP!"]
+};
+
+function getMotivation(nf, n1, n2, n3) {
+  if (nf === 0 && n1 === 0) return MOTIVATIONS.nodata[0];
+  const pool = nf >= 7 ? MOTIVATIONS.high : nf >= 4 ? MOTIVATIONS.mid : MOTIVATIONS.low;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+const RANKS = [
+  [9.5, "★ MAESTRO DEL TALLER ★"],
+  [8.5, "◆ EXPERTO TÉCNICO ◆"],
+  [7.5, "▲ OFICIAL CALIFICADO ▲"],
+  [6.5, "● APRENDIZ AVANZADO ●"],
+  [5.5, "◉ APRENDIZ EN PROGRESO ◉"],
+  [4,   "○ INICIANDO CAMINO ○"],
+  [0,   "· SIN DATOS AÚN ·"]
+];
+function getRank(nf) {
+  for (const [min, label] of RANKS) if (nf >= min) return label;
+  return RANKS[RANKS.length-1][1];
+}
+
+// XP system: nota final maps to XP 0-1000
+function nfToXP(nf) { return Math.round(nf * 100); }
+function xpLevel(xp) {
+  const lvl = Math.floor(xp / 100);
+  const cur = xp % 100;
+  return { level: Math.min(lvl, 10), cur, max: 100, pct: cur };
+}
+
+const ACHIEVEMENTS = [
+  { id:'asist_full', icon:'🎯', name:'PRESENCIA TOTAL', desc:'Asistencia perfecta', check: s => s.asist >= 10 },
+  { id:'asist_good', icon:'📅', name:'PUNTUAL', desc:'Asistencia mayor a 7', check: s => s.asist >= 7 },
+  { id:'epp_full',   icon:'🦺', name:'EQUIPADO', desc:'EPP 100% del tiempo', check: s => s.epp >= 1 },
+  { id:'partic_ace', icon:'⚡', name:'EN RACHA', desc:'Participación mayor a 8', check: s => s.partic >= 8 },
+  { id:'tt_all',     icon:'📝', name:'ENTREGADOR', desc:'Los 4 TTs entregados a tiempo', check: s => [s.tt1,s.tt2,s.tt3,s.tt4].every(t=>t==='T') },
+  { id:'tp_half',    icon:'🔧', name:'MANOS A LA OBRA', desc:'3 o más TPs entregados', check: s => [s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].filter(Boolean).length >= 3 },
+  { id:'tp_all',     icon:'🏆', name:'COMPLETISTA', desc:'Los 6 TPs entregados', check: s => [s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].every(Boolean) },
+  { id:'n1_ace',     icon:'💎', name:'COMPROMISO TOTAL', desc:'Nota 1 mayor a 9', check: s => s.n1 >= 9 },
+  { id:'approved',   icon:'✅', name:'APROBADO', desc:'Nota final 7 o más', check: s => s.nf >= 7 },
+  { id:'excellent',  icon:'👑', name:'EXCELENCIA', desc:'Nota final 9 o más', check: s => s.nf >= 9 },
+];
+
+let allData = { LM: [], MJ: [] };
+let currentGroup = 'LM';
+
+async function fetchSheet(suffix) {
+  const res = await fetch(`${APPS_SCRIPT_URL}?sheet=${suffix}`);
+  return await res.json();
+}
+
+async function loadGroup(suffix) {
+  if (allData[suffix].length) return;
+  try {
+    allData[suffix] = await fetchSheet(suffix);
+  } catch(e) {
+    el('player-list').innerHTML = '<div class="state-msg">Error al cargar.</div>';
+  }
+}
+
+async function selectGroup(suffix) {
+  currentGroup = suffix;
+  document.querySelectorAll('.group-tab').forEach(t =>
+    t.classList.toggle('active', (suffix==='LM') === t.textContent.includes('L'))
+  );
+  el('player-list').innerHTML = '<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
+  await loadGroup(suffix);
+  renderList();
+}
+
+function renderList() {
+  const list = el('player-list');
+  const students = allData[currentGroup];
+  if (!students.length) { list.innerHTML = '<div class="state-msg">Sin datos.</div>'; return; }
+  list.innerHTML = '';
+  students.forEach((s, i) => {
+    const nf = Number(s.nf) || 0;
+    const xp = nfToXP(nf);
+    const { level } = xpLevel(xp);
+    const btn = document.createElement('button');
+    btn.className = 'player-btn';
+    btn.dataset.idx = i;
+    btn.innerHTML = `<span>${s.nombre.split(',')[0]}</span><span class="player-lvl" style="color:${gradeColor(nf)}">LVL ${level}</span>`;
+    btn.onclick = () => showPlayer(i);
+    list.appendChild(btn);
+  });
+}
+
+function showPlayer(idx) {
+  document.querySelectorAll('.player-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  const s = allData[currentGroup][idx];
+  const nf = Number(s.nf) || 0;
+  const n1 = Number(s.n1) || 0;
+  const n2 = Number(s.n2) || 0;
+  const n3 = Number(s.n3) || 0;
+
+  // XP / Level
+  const xp = nfToXP(nf);
+  const { level, cur, max, pct } = xpLevel(xp);
+
+  el('g-name').textContent = s.nombre;
+  el('g-level').textContent = level;
+  el('g-next').textContent = level < 10 ? level + 1 : 'MAX';
+  el('g-xpbar').style.width = `${pct}%`;
+  el('g-xp-cur').textContent = cur;
+  el('g-xp-max').textContent = max;
+  el('g-motivation').textContent = getMotivation(nf, n1, n2, n3);
+
+  // Final
+  el('g-final').textContent = fmt(nf);
+  el('g-final').style.color = gradeColor(nf);
+  el('g-rank').textContent = getRank(nf);
+
+  // Stats N1
+  const asistVal = Number(s.asist) || 0;
+  const eppPct   = Number(s.epp)   || 0;
+  const partic   = Number(s.partic)|| 0;
+  el('g-asist').textContent = fmt(asistVal);
+  el('g-asist').style.color = gradeColor(asistVal);
+  el('bar-asist').style.width = `${asistVal*10}%`;
+  el('bar-asist').style.background = gradeColor(asistVal);
+  el('g-epp').textContent = `${Math.round(eppPct*100)}%`;
+  el('g-epp').style.color = gradeColor(eppPct*10);
+  el('bar-epp').style.width = `${eppPct*100}%`;
+  el('bar-epp').style.background = gradeColor(eppPct*10);
+  el('g-partic').textContent = fmt(partic);
+  el('g-partic').style.color = gradeColor(partic);
+  el('bar-partic').style.width = `${partic*10}%`;
+  el('bar-partic').style.background = gradeColor(partic);
+
+  // Stats N2
+  const ttTexts = [s.tt1,s.tt2,s.tt3,s.tt4];
+  const ttNums  = ttTexts.map(t => t ? (t==='T'?10:t==='T1'?n1>=9?9:8:t==='T2'?n1>=7?7:6:t==='T3'?n1>=5?5:4:n1<2?1:n1<3?2:3) : 0);
+  const ttProm  = ttNums.reduce((a,b)=>a+b,0) / 4;
+  const examen  = Number(s.examen) || 0;
+  el('g-tt').textContent = fmt(ttProm);
+  el('g-tt').style.color = gradeColor(ttProm);
+  el('bar-tt').style.width = `${ttProm*10}%`;
+  el('bar-tt').style.background = gradeColor(ttProm);
+  el('g-exam').textContent = fmt(examen);
+  el('g-exam').style.color = gradeColor(examen);
+  el('bar-exam').style.width = `${examen*10}%`;
+  el('bar-exam').style.background = gradeColor(examen);
+
+  // Stats N3 - TPs
+  const tpKeys = ['tp1','tp2','tp3','tp4','tp5','tp6'];
+  const tpContainer = el('tp-stat-blocks');
+  tpContainer.innerHTML = '';
+  tpKeys.forEach((k, i) => {
+    const txt = s[k];
+    const val = txt ? tpTextToNum(txt, n1) : 0;
+    const div = document.createElement('div');
+    div.className = 'stat-block';
+    div.innerHTML = `
+      <div class="stat-header">
+        <span class="stat-name">TP ${i+1} <span style="color:var(--muted);font-size:9px">16.7%</span></span>
+        <span class="stat-val" style="color:${txt ? gradeColor(val) : 'var(--muted)'}">${txt ? `${txt} · ${fmt(val)}` : '—'}</span>
+      </div>
+      <div class="stat-bar-track"><div class="stat-bar-fill" style="background:${gradeColor(val)};width:${val*10}%"></div></div>`;
+    tpContainer.appendChild(div);
+  });
+
+  // Achievements
+  const achContainer = el('achievements');
+  achContainer.innerHTML = '';
+  ACHIEVEMENTS.forEach(a => {
+    const unlocked = a.check(s);
+    const div = document.createElement('div');
+    div.className = `achievement ${unlocked ? 'unlocked' : 'locked'}`;
+    div.innerHTML = `<span class="ach-icon">${a.icon}</span><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div>`;
+    achContainer.appendChild(div);
+  });
+
+  el('game-screen').classList.add('visible');
+  el('game-screen').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Init
+loadGroup('LM').then(renderList);
+loadGroup('MJ');
+</script>
+</body>
+</html>
