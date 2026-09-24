@@ -27,133 +27,267 @@
 
 body {
   background: var(--bg); color: var(--text);
-  font-family: var(--font-mono);
-  min-height: 100vh; padding: 16px;
+  font-family: var(--font-mono); min-height: 100vh; padding: 16px;
 }
+
+/* scanlines */
 body::before {
   content: ''; position: fixed; inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
   pointer-events: none; z-index: 9999;
 }
 
-.arcade-header { text-align: center; padding: 24px 0 20px; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
-.arcade-title {
-  font-family: var(--font-pixel); font-size: clamp(10px,3vw,16px);
-  color: var(--cyan); letter-spacing: 2px; margin-bottom: 6px;
-  text-shadow: 0 0 20px var(--cyan); animation: glow-pulse 2s ease-in-out infinite;
-}
-.arcade-sub { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
-@keyframes glow-pulse {
-  0%,100% { text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,255,0.3); }
-  50%      { text-shadow: 0 0 30px var(--cyan), 0 0 60px rgba(0,245,255,0.5); }
+/* corner decoration */
+body::after {
+  content: ''; position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,245,255,0.03) 100%);
+  pointer-events: none; z-index: 0;
 }
 
+/* ── HEADER ── */
+.arcade-header {
+  text-align: center; padding: 28px 0 20px;
+  border-bottom: 2px solid var(--border); margin-bottom: 24px;
+  position: relative;
+}
+.arcade-header::before, .arcade-header::after {
+  content: '◄◄◄'; font-family: var(--font-pixel); font-size: 8px;
+  color: var(--muted); position: absolute; top: 50%; transform: translateY(-50%);
+}
+.arcade-header::before { left: 0; }
+.arcade-header::after { right: 0; content: '►►►'; }
+
+.arcade-title {
+  font-family: var(--font-pixel); font-size: clamp(10px,3vw,18px);
+  color: var(--cyan); letter-spacing: 3px; margin-bottom: 4px;
+  text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,255,0.3);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+.arcade-subtitle {
+  font-family: var(--font-pixel); font-size: clamp(6px,1.5vw,9px);
+  color: var(--purple); letter-spacing: 2px; margin-bottom: 8px;
+}
+.arcade-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+@keyframes glow-pulse {
+  0%,100% { text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,255,0.3); }
+  50%      { text-shadow: 0 0 35px var(--cyan), 0 0 70px rgba(0,245,255,0.5), 0 0 100px rgba(0,245,255,0.15); }
+}
+
+/* ── INSERT COIN ── */
+.insert-coin {
+  font-family: var(--font-pixel); font-size: 8px; color: var(--yellow);
+  text-align: center; margin-bottom: 20px; letter-spacing: 1px;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── SELECTOR ── */
 .selector-panel {
   background: var(--panel); border: 2px solid var(--border);
   padding: 16px; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;
+  position: relative;
 }
-.selector-label { font-family: var(--font-pixel); font-size: 8px; color: var(--purple); margin-bottom: 12px; letter-spacing: 1px; }
-.group-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.selector-panel::before {
+  content: 'SELECT PLAYER'; font-family: var(--font-pixel); font-size: 6px;
+  color: var(--muted); position: absolute; top: -9px; left: 12px;
+  background: var(--panel); padding: 0 6px;
+}
+.selector-label { font-family: var(--font-pixel); font-size: 7px; color: var(--purple); margin-bottom: 10px; letter-spacing: 1px; }
+.group-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
 .group-tab {
-  flex: 1; padding: 8px; background: var(--bg); border: 2px solid var(--border);
+  flex: 1; padding: 10px; background: var(--bg); border: 2px solid var(--border);
   color: var(--muted); font-family: var(--font-pixel); font-size: 7px;
-  cursor: pointer; text-align: center; transition: all 0.1s;
+  cursor: pointer; text-align: center; transition: all 0.1s; position: relative; overflow: hidden;
 }
-.group-tab.active { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px rgba(0,245,255,0.3); }
-.player-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 6px; max-height: 240px; overflow-y: auto; }
+.group-tab::after { content: ''; position: absolute; inset: 0; background: var(--cyan); opacity: 0; transition: opacity 0.1s; }
+.group-tab.active { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 15px rgba(0,245,255,0.3), inset 0 0 10px rgba(0,245,255,0.05); }
+.player-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 6px; max-height: 240px; overflow-y: auto; }
 .player-btn {
-  padding: 8px 10px; background: var(--bg); border: 2px solid var(--border);
+  padding: 9px 10px; background: var(--bg); border: 2px solid var(--border);
   color: var(--text); font-family: var(--font-mono); font-size: 12px;
-  cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: all 0.1s; width: 100%;
+  cursor: pointer; text-align: left; display: flex; justify-content: space-between;
+  align-items: center; transition: all 0.1s; width: 100%; position: relative;
 }
-.player-btn:hover { border-color: var(--purple); color: var(--purple); }
-.player-btn.active { border-color: var(--yellow); color: var(--yellow); box-shadow: 0 0 10px rgba(255,230,0,0.2); }
-.player-lvl { font-family: var(--font-pixel); font-size: 7px; }
+.player-btn:hover { border-color: var(--purple); color: var(--purple); transform: translateX(2px); }
+.player-btn.active { border-color: var(--yellow); color: var(--yellow); box-shadow: 0 0 12px rgba(255,230,0,0.25); }
+.player-btn.active::before { content: '▶'; position: absolute; left: -2px; font-family: var(--font-pixel); font-size: 8px; color: var(--yellow); }
+.player-rank { font-family: var(--font-pixel); font-size: 6px; }
+
 .state-msg { text-align: center; padding: 20px; font-size: 11px; color: var(--muted); }
 .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 8px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── GAME SCREEN ── */
 .game-screen { display: none; max-width: 600px; margin: 0 auto; }
 .game-screen.visible { display: block; }
 
+/* Player card */
 .player-card {
   background: var(--panel); border: 2px solid var(--cyan);
-  box-shadow: 0 0 20px rgba(0,245,255,0.15);
-  padding: 20px; margin-bottom: 16px; position: relative; overflow: hidden;
+  box-shadow: 0 0 30px rgba(0,245,255,0.12), inset 0 0 30px rgba(0,245,255,0.02);
+  padding: 20px; margin-bottom: 12px; position: relative; overflow: hidden;
 }
 .player-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  content: ''; position: absolute; top: 0; left: -100%; right: 0; height: 2px;
   background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  animation: scan 3s linear infinite;
+  animation: scan-line 2.5s linear infinite;
 }
-@keyframes scan { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+@keyframes scan-line { to { left: 100%; } }
 
-.player-name { font-family: var(--font-pixel); font-size: clamp(8px,2.5vw,12px); color: var(--yellow); text-shadow: 0 0 10px rgba(255,230,0,0.5); margin-bottom: 16px; }
+.player-tag {
+  font-family: var(--font-pixel); font-size: 6px; color: var(--muted);
+  margin-bottom: 6px; letter-spacing: 1px;
+}
+.player-name {
+  font-family: var(--font-pixel); font-size: clamp(8px,2.5vw,13px);
+  color: var(--yellow); text-shadow: 0 0 15px rgba(255,230,0,0.4);
+  margin-bottom: 4px; letter-spacing: 1px;
+}
+.rank-badge {
+  font-family: var(--font-pixel); font-size: clamp(10px,3vw,15px);
+  margin-bottom: 16px; letter-spacing: 1px;
+}
 
-.level-row { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-.level-badge { font-family: var(--font-pixel); font-size: clamp(28px,8vw,48px); color: var(--cyan); text-shadow: 0 0 30px var(--cyan); line-height: 1; flex-shrink: 0; }
-.level-badge span { font-size: 0.4em; color: var(--muted); display: block; margin-bottom: 4px; }
+/* Level + XP */
+.level-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.level-badge {
+  font-family: var(--font-pixel); font-size: clamp(32px,9vw,52px);
+  color: var(--cyan); text-shadow: 0 0 40px var(--cyan), 0 0 80px rgba(0,245,255,0.3);
+  line-height: 1; flex-shrink: 0; position: relative;
+}
+.level-badge .lbl { font-size: 0.35em; color: var(--muted); display: block; margin-bottom: 2px; }
 .level-info { flex: 1; }
-.xp-label { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
-.xp-bar-track { height: 12px; background: var(--bg); border: 2px solid var(--border); overflow: hidden; }
+.xp-label { font-size: 9px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.5px; }
+.xp-bar-track { height: 14px; background: var(--bg); border: 2px solid var(--border); overflow: hidden; position: relative; }
 .xp-bar-fill {
   height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple));
-  transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+  transition: width 1s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
 }
-.xp-text { font-size: 10px; color: var(--cyan); margin-top: 4px; text-align: right; }
+.xp-bar-fill::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255,255,255,0.1) 4px, rgba(255,255,255,0.1) 6px);
+}
+.xp-segments {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  display: flex; pointer-events: none;
+}
+.xp-seg { flex: 1; border-right: 1px solid rgba(0,0,0,0.3); }
+.xp-text { font-size: 9px; color: var(--cyan); margin-top: 4px; text-align: right; font-family: var(--font-pixel); }
 
-.rank-badge { font-family: var(--font-pixel); font-size: clamp(10px,3vw,14px); margin-bottom: 10px; }
+/* Motivation */
+.motivation-box {
+  padding: 10px 12px; border-left: 3px solid var(--green);
+  background: rgba(0,255,136,0.04); margin-top: 4px;
+}
+.motivation-main { font-size: 12px; color: var(--green); margin-bottom: 6px; line-height: 1.6; }
+.motivation-tip { font-size: 10px; color: var(--muted); line-height: 1.5; }
 
-.motivation-box { padding: 10px 12px; margin-top: 10px; border-left: 3px solid var(--green); background: rgba(0,255,136,0.05); }
-.motivation-main { font-size: 12px; color: var(--green); margin-bottom: 6px; line-height: 1.5; }
-.motivation-tip { font-size: 11px; color: var(--muted); line-height: 1.5; }
-
+/* Final score */
 .final-display {
-  text-align: center; padding: 20px; background: var(--panel);
-  border: 2px solid var(--yellow); box-shadow: 0 0 30px rgba(255,230,0,0.15); margin-bottom: 16px;
+  background: var(--panel); border: 2px solid var(--yellow);
+  box-shadow: 0 0 30px rgba(255,230,0,0.12);
+  padding: 20px; margin-bottom: 12px; text-align: center; position: relative; overflow: hidden;
 }
-.final-label { font-family: var(--font-pixel); font-size: 8px; color: var(--muted); margin-bottom: 8px; }
-.final-val { font-family: var(--font-pixel); font-size: clamp(32px,10vw,56px); line-height: 1; }
+.final-display::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(255,230,0,0.04) 0%, transparent 70%);
+}
+.final-label { font-family: var(--font-pixel); font-size: 7px; color: var(--muted); margin-bottom: 10px; letter-spacing: 1px; }
+.final-val { font-family: var(--font-pixel); font-size: clamp(36px,11vw,60px); line-height: 1; margin-bottom: 6px; }
+.final-sub { font-size: 10px; color: var(--muted); }
 
-.stats-section-title {
-  font-family: var(--font-pixel); font-size: 8px; color: var(--purple);
-  letter-spacing: 1px; margin: 20px 0 10px;
+/* Stats sections */
+.section-header {
   display: flex; justify-content: space-between; align-items: center;
+  margin: 20px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px;
 }
-.stats-section-nota { color: var(--cyan); }
+.section-title { font-family: var(--font-pixel); font-size: 8px; color: var(--purple); letter-spacing: 1px; }
+.section-nota { font-family: var(--font-pixel); font-size: 10px; }
 
-.stat-block { background: var(--panel); border: 2px solid var(--border); padding: 12px 14px; margin-bottom: 8px; }
-.stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+/* Stat blocks */
+.stat-block {
+  background: var(--panel); border: 2px solid var(--border);
+  padding: 12px 14px; margin-bottom: 8px;
+}
+.stat-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
 .stat-name { font-size: 11px; color: var(--muted); }
+.stat-pct { font-size: 9px; color: var(--muted); margin-left: 4px; }
 .stat-val { font-family: var(--font-pixel); font-size: 10px; }
-.stat-bar-track { height: 6px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
-.stat-bar-fill { height: 100%; transition: width 0.6s ease; }
+.stat-aporte { font-size: 9px; color: var(--muted); margin-left: 4px; font-family: var(--font-mono); }
+.stat-bar-track { height: 6px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; margin-bottom: 6px; }
+.stat-bar-fill { height: 100%; transition: width 0.5s ease; }
 
-.achievements-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 8px; }
+/* Item grid (TTs/TPs buttons) */
+.item-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.item-btn {
+  width: 28px; height: 24px; background: var(--bg); border: 2px solid var(--border);
+  color: var(--muted); font-family: var(--font-pixel); font-size: 7px;
+  display: flex; align-items: center; justify-content: center;
+}
+.item-btn.done { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 6px rgba(0,245,255,0.3); }
+
+/* Item detail rows */
+.item-detail {
+  background: rgba(0,245,255,0.03); border-left: 2px solid var(--border);
+  padding: 6px 10px; margin-bottom: 5px; display: none;
+}
+.item-detail.visible { display: block; border-left-color: var(--cyan); }
+.item-detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.item-detail-name { font-size: 10px; color: var(--muted); }
+.item-detail-val { font-family: var(--font-pixel); font-size: 9px; }
+.item-detail-bar-track { height: 4px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
+.item-detail-bar-fill { height: 100%; transition: width 0.4s; }
+
+/* Achievements */
+.ach-group-label { font-family: var(--font-pixel); font-size: 7px; color: var(--purple); margin: 16px 0 8px; letter-spacing: 1px; }
+.achievements-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
 .achievement {
   background: var(--panel); border: 2px solid var(--border);
-  padding: 10px 8px; text-align: center;
+  padding: 10px 6px; text-align: center; transition: all 0.2s;
 }
-.achievement.unlocked { border-color: var(--yellow); box-shadow: 0 0 12px rgba(255,230,0,0.2); }
-.achievement.locked { opacity: 0.3; }
-.ach-icon { font-size: 18px; margin-bottom: 5px; display: block; font-family: var(--font-pixel); color: var(--yellow); }
-.ach-name { font-family: var(--font-pixel); font-size: 5px; color: var(--yellow); margin-bottom: 4px; line-height: 1.5; }
+.achievement.unlocked {
+  border-color: var(--yellow);
+  box-shadow: 0 0 14px rgba(255,230,0,0.2), inset 0 0 10px rgba(255,230,0,0.03);
+}
+.achievement.locked { opacity: 0.25; }
+.ach-icon { font-family: var(--font-pixel); font-size: 10px; color: var(--yellow); margin-bottom: 6px; display: block; letter-spacing: -1px; }
+.ach-name { font-family: var(--font-pixel); font-size: 5px; color: var(--yellow); margin-bottom: 4px; line-height: 1.6; }
 .ach-desc { font-size: 9px; color: var(--muted); line-height: 1.4; }
-.ach-group { font-family: var(--font-pixel); font-size: 7px; color: var(--purple); margin: 16px 0 8px; letter-spacing: 1px; }
+
+/* Pixel corners on panels */
+.pixel-panel {
+  position: relative;
+}
+.pixel-panel::before, .pixel-panel::after {
+  content: ''; position: absolute; width: 6px; height: 6px;
+  background: var(--cyan);
+}
+.pixel-panel::before { top: -3px; left: -3px; }
+.pixel-panel::after  { bottom: -3px; right: -3px; }
+
+@media (min-width: 700px) {
+  body { padding: 28px; }
+  .arcade-title { font-size: 22px; }
+}
 </style>
 </head>
 <body>
 
 <div class="arcade-header">
   <div class="arcade-title">OFICINA TÉCNICA I</div>
-  <div class="arcade-sub">▶ SELECCIONÁ TU PERSONAJE ◀</div>
+  <div class="arcade-subtitle">SISTEMA DE PROGRESIÓN</div>
+  <div class="arcade-sub">Docente: Silva Sergio Marcelo · 2026</div>
 </div>
+
+<div class="insert-coin">▼ SELECCIONÁ TU PERSONAJE ▼</div>
 
 <div class="selector-panel">
   <div class="selector-label">// GRUPO</div>
   <div class="group-tabs">
-    <button class="group-tab active" onclick="selectGroup('LM')">L · M</button>
-    <button class="group-tab" onclick="selectGroup('MJ')">M · J</button>
+    <button class="group-tab active" onclick="selectGroup('LM')">◄ LUNES · MIÉRCOLES ►</button>
+    <button class="group-tab" onclick="selectGroup('MJ')">◄ MARTES · JUEVES ►</button>
   </div>
   <div class="selector-label">// JUGADOR</div>
   <div class="player-list" id="player-list">
@@ -163,15 +297,20 @@ body::before {
 
 <div class="game-screen" id="game-screen">
 
+  <!-- Player card -->
   <div class="player-card">
+    <div class="player-tag">// JUGADOR ACTIVO</div>
     <div class="player-name" id="g-name">—</div>
     <div class="rank-badge" id="g-rank">—</div>
     <div class="level-row">
-      <div class="level-badge"><span>NIVEL</span><span id="g-level">—</span></div>
+      <div class="level-badge"><span class="lbl">NIVEL</span><span id="g-level">—</span></div>
       <div class="level-info">
-        <div class="xp-label">XP HACIA NIVEL <span id="g-next">—</span></div>
-        <div class="xp-bar-track"><div class="xp-bar-fill" id="g-xpbar" style="width:0%"></div></div>
-        <div class="xp-text"><span id="g-xp-cur">—</span> / <span id="g-xp-max">—</span> XP</div>
+        <div class="xp-label">▸ XP HACIA NIVEL <span id="g-next">—</span></div>
+        <div class="xp-bar-track">
+          <div class="xp-bar-fill" id="g-xpbar" style="width:0%"></div>
+          <div class="xp-segments" id="g-xp-segs"></div>
+        </div>
+        <div class="xp-text"><span id="g-xp-cur">0</span> / <span id="g-xp-max">100</span> XP</div>
       </div>
     </div>
     <div class="motivation-box">
@@ -180,63 +319,86 @@ body::before {
     </div>
   </div>
 
+  <!-- Final -->
   <div class="final-display">
-    <div class="final-label">// PUNTUACIÓN FINAL</div>
+    <div class="final-label">// PUNTUACIÓN FINAL DEL BIMESTRE</div>
     <div class="final-val" id="g-final">—</div>
+    <div class="final-sub" id="g-final-sub">—</div>
   </div>
 
-  <div class="stats-section-title">
-    <span>▸ COMPROMISO</span>
-    <span class="stats-section-nota" id="g-n1">—</span>
+  <!-- N1: Compromiso -->
+  <div class="section-header">
+    <span class="section-title">▸ COMPROMISO</span>
+    <span class="section-nota" id="g-n1">—</span>
   </div>
+
   <div class="stat-block">
     <div class="stat-header">
-      <span class="stat-name">Asistencia <span style="color:var(--muted);font-size:9px">20%</span></span>
-      <span class="stat-val" id="g-asist">—</span>
+      <span class="stat-name">Asistencia <span class="stat-pct">20%</span></span>
+      <span><span class="stat-val" id="g-asist">—</span><span class="stat-aporte" id="ap-asist"></span></span>
     </div>
     <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-asist" style="width:0%"></div></div>
   </div>
+
   <div class="stat-block">
     <div class="stat-header">
-      <span class="stat-name">EPP <span style="color:var(--muted);font-size:9px">20%</span></span>
-      <span class="stat-val" id="g-epp">—</span>
+      <span class="stat-name">EPP <span class="stat-pct">20%</span></span>
+      <span><span class="stat-val" id="g-epp">—</span><span class="stat-aporte" id="ap-epp"></span></span>
     </div>
     <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-epp" style="width:0%"></div></div>
   </div>
+
   <div class="stat-block">
     <div class="stat-header">
-      <span class="stat-name">Participación <span style="color:var(--muted);font-size:9px">60%</span></span>
-      <span class="stat-val" id="g-partic">—</span>
+      <span class="stat-name">Participación <span class="stat-pct">60%</span></span>
+      <span><span class="stat-val" id="g-partic">—</span><span class="stat-aporte" id="ap-partic"></span></span>
     </div>
     <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-partic" style="width:0%"></div></div>
   </div>
 
-  <div class="stats-section-title">
-    <span>▸ TEORÍA</span>
-    <span class="stats-section-nota" id="g-n2">—</span>
+  <!-- N2: Teoría -->
+  <div class="section-header">
+    <span class="section-title">▸ TEORÍA</span>
+    <span class="section-nota" id="g-n2">—</span>
   </div>
+
   <div class="stat-block">
     <div class="stat-header">
-      <span class="stat-name">Entregas TT <span style="color:var(--muted);font-size:9px">30%</span></span>
-      <span class="stat-val" id="g-tt">—</span>
+      <span class="stat-name">Trabajos Teóricos <span class="stat-pct">30%</span></span>
+      <span><span class="stat-val" id="g-tt">—</span><span class="stat-aporte" id="ap-tt"></span></span>
     </div>
+    <div class="item-grid" id="tt-btns"></div>
+    <div id="tt-details"></div>
     <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-tt" style="width:0%"></div></div>
   </div>
+
   <div class="stat-block">
     <div class="stat-header">
-      <span class="stat-name">Examen <span style="color:var(--muted);font-size:9px">70%</span></span>
-      <span class="stat-val" id="g-exam">—</span>
+      <span class="stat-name">Examen <span class="stat-pct">70%</span></span>
+      <span><span class="stat-val" id="g-exam">—</span><span class="stat-aporte" id="ap-exam"></span></span>
     </div>
     <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-exam" style="width:0%"></div></div>
   </div>
 
-  <div class="stats-section-title">
-    <span>▸ PRÁCTICA</span>
-    <span class="stats-section-nota" id="g-n3">—</span>
+  <!-- N3: Práctica -->
+  <div class="section-header">
+    <span class="section-title">▸ PRÁCTICA</span>
+    <span class="section-nota" id="g-n3">—</span>
   </div>
-  <div id="tp-stat-blocks"></div>
 
-  <div class="stats-section-title">▸ LOGROS</div>
+  <div class="stat-block">
+    <div class="stat-header">
+      <span class="stat-name">Trabajos Prácticos <span class="stat-pct">100%</span></span>
+    </div>
+    <div class="item-grid" id="tp-btns"></div>
+    <div id="tp-details"></div>
+  </div>
+
+  <!-- Logros -->
+  <div class="section-header">
+    <span class="section-title">▸ LOGROS</span>
+    <span class="section-nota" id="g-ach-count" style="color:var(--yellow)">—</span>
+  </div>
   <div id="achievements"></div>
 
 </div>
@@ -245,21 +407,13 @@ body::before {
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNyF__3pe3B04CQVqgT__Bsly2KvkDjuHE-nG3PANiuw5ddrAqwH4cMQN_9MyVcqk/exec';
 const el = id => document.getElementById(id);
 const fmt = n => Math.abs(n-10)<1e-6 ? '10' : Number(n).toFixed(1);
+const sum = arr => arr.reduce((a,b)=>a+b,0);
 
 function gradeColor(n) {
   if (n >= 8) return 'var(--green)';
   if (n >= 6) return 'var(--cyan)';
   if (n >= 4) return 'var(--yellow)';
   return 'var(--red)';
-}
-
-function tpTextToNum(txt, n1) {
-  if (txt==='E')  return 10;
-  if (txt==='MB') return 9;
-  if (txt==='B')  return n1>=8?8:7;
-  if (txt==='R')  return n1>=6?6:5;
-  if (txt==='I')  return n1<2?1:n1<3?2:n1<4?3:4;
-  return 0;
 }
 
 function ttTextToNum(txt, n1) {
@@ -270,138 +424,120 @@ function ttTextToNum(txt, n1) {
   if (txt==='T4') return n1<2?1:n1<3?2:3;
   return 0;
 }
+function tpTextToNum(txt, n1) {
+  if (txt==='E')  return 10;
+  if (txt==='MB') return 9;
+  if (txt==='B')  return n1>=8?8:7;
+  if (txt==='R')  return n1>=6?6:5;
+  if (txt==='I')  return n1<2?1:n1<3?2:n1<4?3:4;
+  return 0;
+}
+
+const TT_LABELS = {T:'A tiempo',T1:'1 clase tarde',T2:'2 clases tarde',T3:'3 clases tarde',T4:'4 clases tarde'};
 
 // ── RANGOS ──
 const RANKS = [
-  [9.5, 'Clase S',  'var(--cyan)'],
-  [9.0, 'Clase A+', 'var(--green)'],
-  [8.5, 'Clase A',  'var(--green)'],
-  [8.0, 'Clase A−', 'var(--green)'],
-  [7.5, 'Clase B+', 'var(--cyan)'],
-  [7.0, 'Clase B',  'var(--cyan)'],
-  [6.5, 'Clase B−', 'var(--cyan)'],
-  [6.0, 'Clase C+', 'var(--yellow)'],
-  [5.5, 'Clase C',  'var(--yellow)'],
-  [5.0, 'Clase C−', 'var(--yellow)'],
-  [4.5, 'Clase D+', 'var(--orange)'],
-  [4.0, 'Clase D',  'var(--orange)'],
-  [0,   'Clase F',  'var(--red)'],
+  [9.5,'Clase S','var(--cyan)'],
+  [9.0,'Clase A+','var(--green)'],
+  [8.5,'Clase A','var(--green)'],
+  [8.0,'Clase A−','var(--green)'],
+  [7.5,'Clase B+','var(--cyan)'],
+  [7.0,'Clase B','var(--cyan)'],
+  [6.5,'Clase B−','var(--cyan)'],
+  [6.0,'Clase C+','var(--yellow)'],
+  [5.5,'Clase C','var(--yellow)'],
+  [5.0,'Clase C−','var(--yellow)'],
+  [4.5,'Clase D+','var(--orange)'],
+  [4.0,'Clase D','var(--orange)'],
+  [0,'Clase F','var(--red)'],
 ];
 function getRank(nf) {
-  for (const [min, label, color] of RANKS) if (nf >= min) return {label, color};
-  return {label: 'Clase F', color: 'var(--red)'};
+  for (const [min,label,color] of RANKS) if (nf>=min) return {label,color};
+  return {label:'Clase F',color:'var(--red)'};
 }
 
 // ── XP ──
-function nfToXP(nf) { return Math.round(nf * 100); }
-function xpLevel(xp) {
-  const level = Math.min(Math.floor(xp / 100), 10);
-  const cur = xp % 100;
-  return { level, cur, pct: level >= 10 ? 100 : cur };
+function xpLevel(nf) {
+  const xp = Math.round(nf*100);
+  const level = Math.min(Math.floor(xp/100),10);
+  const cur = xp%100;
+  return {level, cur, pct: level>=10?100:cur};
 }
 
 // ── FRASES ──
 const MOTIVATIONS = {
-  high: [
+  high:[
     "Logro desbloqueado. Seguís escribiendo tu mejor partida.",
     "Nivel de compromiso: legendario. El taller te reconoce.",
     "Sos el tipo de jugador que otros quieren tener en el equipo."
   ],
-  mid: [
+  mid:[
     "Estás en racha. Un componente más y desbloqueás el siguiente nivel.",
     "Ya demostraste que podés. Ahora es solo cuestión de mantenerlo.",
     "La constancia es el truco que nadie te cuenta. Seguí."
   ],
-  low: [
+  low:[
     "Toda partida épica arranca desde cero. La tuya todavía está escribiéndose.",
     "Cada clase que venís suma puntos reales. No subestimes lo que acumula con el tiempo.",
     "Los mejores no nacieron siendo buenos — practicaron. Vos también podés."
   ],
-  nodata: ["Tu partida todavía no empezó. Vení a clase y empezá a sumar puntos."]
+  nodata:["Tu partida todavía no empezó. Vení a clase y empezá a sumar puntos."]
 };
-
 const TIPS = {
-  asist:  "Falta presencia — sin venir no se puede mejorar.",
-  epp:    "Traé el equipo completo la próxima clase. Es el punto más fácil de recuperar.",
-  partic: "Involucrarte en clase es lo que más pesa en Compromiso. Animate a participar más.",
-  tt:     "Todavía podés entregar trabajos teóricos. Cada entrega mueve la aguja.",
-  exam:   "El examen define el 70% de Teoría. Vale la pena dedicarle tiempo.",
-  tp:     "Los trabajos prácticos son tu mayor palanca. Cada uno que entregás suma directo."
+  asist: "Falta presencia — sin venir no se puede mejorar.",
+  epp:   "Traé el equipo completo la próxima clase. Es el punto más fácil de recuperar.",
+  partic:"Involucrarte en clase es lo que más pesa en Compromiso. Animate a participar más.",
+  tt:    "Todavía podés entregar trabajos teóricos. Cada entrega mueve la aguja.",
+  exam:  "El examen define el 70% de Teoría. Vale la pena dedicarle tiempo.",
+  tp:    "Los trabajos prácticos son tu mayor palanca. Cada uno que entregás suma directo."
 };
 
 function getMotivation(nf) {
-  if (nf === 0) return MOTIVATIONS.nodata[0];
-  const pool = nf >= 7.5 ? MOTIVATIONS.high : nf >= 5 ? MOTIVATIONS.mid : MOTIVATIONS.low;
-  return pool[Math.floor(Math.random() * pool.length)];
+  if (!nf) return MOTIVATIONS.nodata[0];
+  const pool = nf>=7.5?MOTIVATIONS.high:nf>=5?MOTIVATIONS.mid:MOTIVATIONS.low;
+  return pool[Math.floor(Math.random()*pool.length)];
 }
-
-function getWeakTip(s, n1, ttProm, tpProm, examen) {
-  const scores = {
-    asist:  Number(s.asist) || 0,
-    epp:    (Number(s.epp) || 0) * 10,
-    partic: Number(s.partic) || 0,
-    tt:     ttProm,
-    exam:   examen,
-    tp:     tpProm
-  };
-  const weakest = Object.entries(scores).sort((a,b) => a[1]-b[1])[0][0];
-  return TIPS[weakest];
+function getWeakTip(scores) {
+  const key = Object.entries(scores).sort((a,b)=>a[1]-b[1])[0][0];
+  return TIPS[key];
 }
 
 // ── LOGROS ──
-const ACHIEVEMENT_GROUPS = [
-  {
-    label: 'ASISTENCIA',
-    items: [
-      { name:'PRESENTE',       desc:'Asistencia mayor a 5',    icon:'★', check: s => (Number(s.asist)||0) > 5 },
-      { name:'PUNTUAL',        desc:'Asistencia mayor a 7',    icon:'★★', check: s => (Number(s.asist)||0) > 7 },
-      { name:'PRESENCIA TOTAL',desc:'Asistencia perfecta',     icon:'★★★', check: s => (Number(s.asist)||0) >= 10 },
-    ]
-  },
-  {
-    label: 'EPP',
-    items: [
-      { name:'EQUIPADO',   desc:'EPP mayor a 50%', icon:'◆', check: s => (Number(s.epp)||0) > 0.5 },
-      { name:'PROTEGIDO',  desc:'EPP mayor a 80%', icon:'◆◆', check: s => (Number(s.epp)||0) > 0.8 },
-      { name:'BLINDADO',   desc:'EPP al 100%',     icon:'◆◆◆', check: s => (Number(s.epp)||0) >= 1 },
-    ]
-  },
-  {
-    label: 'PARTICIPACIÓN',
-    items: [
-      { name:'ACTIVO',        desc:'Participación mayor a 5', icon:'▲', check: s => (Number(s.partic)||0) > 5 },
-      { name:'EN RACHA',      desc:'Participación mayor a 7', icon:'▲▲', check: s => (Number(s.partic)||0) > 7 },
-      { name:'RACHA PERFECTA',desc:'Participación mayor a 9', icon:'▲▲▲', check: s => (Number(s.partic)||0) > 9 },
-    ]
-  },
-  {
-    label: 'TRABAJOS TEÓRICOS',
-    items: [
-      { name:'ENTREGANDO', desc:'Al menos 1 TT entregado', icon:'●', check: s => [s.tt1,s.tt2,s.tt3,s.tt4].some(Boolean) },
-      { name:'CONSTANTE',  desc:'Al menos 3 TTs entregados', icon:'●●', check: s => [s.tt1,s.tt2,s.tt3,s.tt4].filter(Boolean).length >= 3 },
-      { name:'ENTREGADOR', desc:'Los 4 TTs entregados', icon:'●●●', check: s => [s.tt1,s.tt2,s.tt3,s.tt4].every(Boolean) },
-    ]
-  },
-  {
-    label: 'EXAMEN',
-    items: [
-      { name:'EXAMINADO',      desc:'Examen rendido',        icon:'◉', check: s => (Number(s.examen)||0) > 0 },
-      { name:'APROBADO',       desc:'Examen mayor a 6',      icon:'◉◉', check: s => (Number(s.examen)||0) > 6 },
-      { name:'TEÓRICO PURO',   desc:'Examen mayor a 8',      icon:'◉◉◉', check: s => (Number(s.examen)||0) > 8 },
-    ]
-  },
-  {
-    label: 'TRABAJOS PRÁCTICOS',
-    items: [
-      { name:'ARRANCANDO',   desc:'Al menos 2 TPs entregados', icon:'✦', check: s => [s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].filter(Boolean).length >= 2 },
-      { name:'MANOS A LA OBRA', desc:'Al menos 4 TPs entregados', icon:'✦✦', check: s => [s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].filter(Boolean).length >= 4 },
-      { name:'ARTESANO',     desc:'Los 6 TPs entregados',      icon:'✦✦✦', check: s => [s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].every(Boolean) },
-    ]
-  },
+const ACH_GROUPS = [
+  { label:'ASISTENCIA', items:[
+    {name:'PRESENTE',       desc:'Asistencia > 5',     icon:'★',   check:s=>(Number(s.asist)||0)>5},
+    {name:'PUNTUAL',        desc:'Asistencia > 7',     icon:'★★',  check:s=>(Number(s.asist)||0)>7},
+    {name:'PRESENCIA TOTAL',desc:'Asistencia perfecta',icon:'★★★', check:s=>(Number(s.asist)||0)>=10},
+  ]},
+  { label:'EPP', items:[
+    {name:'EQUIPADO',  desc:'EPP > 50%',  icon:'◆',   check:s=>(Number(s.epp)||0)>0.5},
+    {name:'PROTEGIDO', desc:'EPP > 80%',  icon:'◆◆',  check:s=>(Number(s.epp)||0)>0.8},
+    {name:'BLINDADO',  desc:'EPP 100%',   icon:'◆◆◆', check:s=>(Number(s.epp)||0)>=1},
+  ]},
+  { label:'PARTICIPACIÓN', items:[
+    {name:'ACTIVO',        desc:'Participación > 5', icon:'▲',   check:s=>(Number(s.partic)||0)>5},
+    {name:'EN RACHA',      desc:'Participación > 7', icon:'▲▲',  check:s=>(Number(s.partic)||0)>7},
+    {name:'RACHA PERFECTA',desc:'Participación > 9', icon:'▲▲▲', check:s=>(Number(s.partic)||0)>9},
+  ]},
+  { label:'TRABAJOS TEÓRICOS', items:[
+    {name:'ENTREGANDO', desc:'Al menos 1 TT',  icon:'●',   check:s=>[s.tt1,s.tt2,s.tt3,s.tt4].some(Boolean)},
+    {name:'CONSTANTE',  desc:'Al menos 3 TTs', icon:'●●',  check:s=>[s.tt1,s.tt2,s.tt3,s.tt4].filter(Boolean).length>=3},
+    {name:'ENTREGADOR', desc:'Los 4 TTs',       icon:'●●●', check:s=>[s.tt1,s.tt2,s.tt3,s.tt4].every(Boolean)},
+  ]},
+  { label:'EXAMEN', items:[
+    {name:'EXAMINADO',    desc:'Examen rendido', icon:'◉',   check:s=>(Number(s.examen)||0)>0},
+    {name:'APROBADO',     desc:'Examen > 6',     icon:'◉◉',  check:s=>(Number(s.examen)||0)>6},
+    {name:'TEÓRICO PURO', desc:'Examen > 8',     icon:'◉◉◉', check:s=>(Number(s.examen)||0)>8},
+  ]},
+  { label:'TRABAJOS PRÁCTICOS', items:[
+    {name:'ARRANCANDO',     desc:'Al menos 2 TPs', icon:'✦',   check:s=>[s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].filter(Boolean).length>=2},
+    {name:'MANOS A LA OBRA',desc:'Al menos 4 TPs', icon:'✦✦',  check:s=>[s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].filter(Boolean).length>=4},
+    {name:'ARTESANO',       desc:'Los 6 TPs',       icon:'✦✦✦', check:s=>[s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].every(Boolean)},
+  ]},
 ];
 
 // ── DATA ──
-let allData = { LM: [], MJ: [] };
+let allData = {LM:[],MJ:[]};
 let currentGroup = 'LM';
 
 async function loadGroup(suffix) {
@@ -417,7 +553,7 @@ async function loadGroup(suffix) {
 async function selectGroup(suffix) {
   currentGroup = suffix;
   document.querySelectorAll('.group-tab').forEach(t =>
-    t.classList.toggle('active', (suffix==='LM') === t.textContent.includes('L'))
+    t.classList.toggle('active',(suffix==='LM')===t.textContent.includes('LUNES'))
   );
   el('player-list').innerHTML = '<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
   await loadGroup(suffix);
@@ -429,130 +565,170 @@ function renderList() {
   const students = allData[currentGroup];
   if (!students.length) { list.innerHTML = '<div class="state-msg">Sin datos.</div>'; return; }
   list.innerHTML = '';
-  students.forEach((s, i) => {
-    const nf = Number(s.nf) || 0;
-    const { label, color } = getRank(nf);
+  students.forEach((s,i) => {
+    const nf = Number(s.nf)||0;
+    const {label,color} = getRank(nf);
     const btn = document.createElement('button');
-    btn.className = 'player-btn';
-    btn.dataset.idx = i;
-    btn.innerHTML = `<span>${s.nombre.split(',')[0]}</span><span class="player-lvl" style="color:${color}">${label}</span>`;
+    btn.className = 'player-btn'; btn.dataset.idx = i;
+    btn.innerHTML = `<span>${s.nombre.split(',')[0]}</span><span class="player-rank" style="color:${color}">${label}</span>`;
     btn.onclick = () => showPlayer(i);
     list.appendChild(btn);
   });
 }
 
 function showPlayer(idx) {
-  document.querySelectorAll('.player-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  document.querySelectorAll('.player-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
   const s = allData[currentGroup][idx];
-  const nf     = Number(s.nf)     || 0;
-  const n1     = Number(s.n1)     || 0;
-  const n2     = Number(s.n2)     || 0;
-  const n3     = Number(s.n3)     || 0;
-  const asist  = Number(s.asist)  || 0;
-  const eppPct = Number(s.epp)    || 0;
-  const partic = Number(s.partic) || 0;
-  const examen = Number(s.examen) || 0;
+  const nf     = Number(s.nf)||0;
+  const n1     = Number(s.n1)||0;
+  const n2     = Number(s.n2)||0;
+  const n3     = Number(s.n3)||0;
+  const asist  = Number(s.asist)||0;
+  const eppPct = Number(s.epp)||0;
+  const partic = Number(s.partic)||0;
+  const examen = Number(s.examen)||0;
 
   // TTs
-  const ttTexts = [s.tt1,s.tt2,s.tt3,s.tt4];
-  const ttNums  = ttTexts.map(t => t ? ttTextToNum(String(t), n1) : 0);
-  const ttProm  = ttNums.reduce((a,b)=>a+b,0) / 4;
+  const ttKeys   = ['tt1','tt2','tt3','tt4'];
+  const ttTexts  = ttKeys.map(k=>s[k]?String(s[k]):null);
+  const ttNums   = ttTexts.map(t=>t?ttTextToNum(t,n1):0);
+  const ttProm   = sum(ttNums)/4;
 
   // TPs
   const tpKeys   = ['tp1','tp2','tp3','tp4','tp5','tp6'];
-  const tpNums   = tpKeys.map(k => s[k] ? tpTextToNum(String(s[k]), n1) : 0);
-  const tpProm   = tpNums.reduce((a,b)=>a+b,0) / 6;
+  const tpTexts  = tpKeys.map(k=>s[k]?String(s[k]):null);
+  const tpNums   = tpTexts.map(t=>t?tpTextToNum(t,n1):0);
+  const tpProm   = sum(tpNums)/6;
+
+  // Aportes N1
+  const aAsist  = asist*0.2;
+  const aEpp    = eppPct*10*0.2;
+  const aPartic = partic*0.6;
+  const aTT     = ttProm*0.3;
+  const aExam   = examen*0.7;
 
   // Rank & level
-  const { label: rankLabel, color: rankColor } = getRank(nf);
-  const xp = nfToXP(nf);
-  const { level, cur, pct } = xpLevel(xp);
+  const {label:rankLabel,color:rankColor} = getRank(nf);
+  const {level,cur,pct} = xpLevel(nf);
 
-  // Player card
+  // ── Player card ──
   el('g-name').textContent = s.nombre;
   el('g-rank').textContent = rankLabel;
   el('g-rank').style.color = rankColor;
   el('g-level').textContent = level;
-  el('g-next').textContent = level < 10 ? level + 1 : 'MAX';
+  el('g-next').textContent = level<10?level+1:'MAX';
   el('g-xpbar').style.width = `${pct}%`;
   el('g-xp-cur').textContent = cur;
   el('g-xp-max').textContent = 100;
+
+  // XP segments
+  const segsEl = el('g-xp-segs');
+  segsEl.innerHTML = '';
+  for (let i=0;i<10;i++) { const d=document.createElement('div'); d.className='xp-seg'; segsEl.appendChild(d); }
+
   el('g-motivation-main').textContent = getMotivation(nf);
-  el('g-motivation-tip').textContent = '▸ ' + getWeakTip(s, n1, ttProm, tpProm, examen);
+  el('g-motivation-tip').textContent = '▸ ' + getWeakTip({asist,epp:eppPct*10,partic,tt:ttProm,exam:examen,tp:tpProm});
 
   // Final
   el('g-final').textContent = fmt(nf);
   el('g-final').style.color = gradeColor(nf);
+  el('g-final-sub').textContent = `${rankLabel} · Nivel ${level}`;
 
   // N1
-  el('g-n1').textContent = fmt(n1);
-  el('g-n1').style.color = gradeColor(n1);
-  el('g-asist').textContent = fmt(asist);
+  el('g-n1').textContent = fmt(n1); el('g-n1').style.color = gradeColor(n1);
+  el('g-asist').textContent = `${Math.round(asist*10)}%`;
   el('g-asist').style.color = gradeColor(asist);
-  el('bar-asist').style.width = `${asist*10}%`;
-  el('bar-asist').style.background = gradeColor(asist);
+  el('bar-asist').style.width=`${asist*10}%`; el('bar-asist').style.background=gradeColor(asist);
+  el('ap-asist').textContent = `(+${aAsist.toFixed(2)})`;
+
   el('g-epp').textContent = `${Math.round(eppPct*100)}%`;
   el('g-epp').style.color = gradeColor(eppPct*10);
-  el('bar-epp').style.width = `${eppPct*100}%`;
-  el('bar-epp').style.background = gradeColor(eppPct*10);
+  el('bar-epp').style.width=`${eppPct*100}%`; el('bar-epp').style.background=gradeColor(eppPct*10);
+  el('ap-epp').textContent = `(+${aEpp.toFixed(2)})`;
+
   el('g-partic').textContent = fmt(partic);
   el('g-partic').style.color = gradeColor(partic);
-  el('bar-partic').style.width = `${partic*10}%`;
-  el('bar-partic').style.background = gradeColor(partic);
+  el('bar-partic').style.width=`${partic*10}%`; el('bar-partic').style.background=gradeColor(partic);
+  el('ap-partic').textContent = `(+${aPartic.toFixed(2)})`;
 
-  // N2
-  el('g-n2').textContent = fmt(n2);
-  el('g-n2').style.color = gradeColor(n2);
-  el('g-tt').textContent = fmt(ttProm);
-  el('g-tt').style.color = gradeColor(ttProm);
-  el('bar-tt').style.width = `${ttProm*10}%`;
-  el('bar-tt').style.background = gradeColor(ttProm);
-  el('g-exam').textContent = fmt(examen);
-  el('g-exam').style.color = gradeColor(examen);
-  el('bar-exam').style.width = `${examen*10}%`;
-  el('bar-exam').style.background = gradeColor(examen);
+  // N2 - TTs
+  el('g-n2').textContent = fmt(n2); el('g-n2').style.color = gradeColor(n2);
+  el('g-tt').textContent = fmt(ttProm); el('g-tt').style.color = gradeColor(ttProm);
+  el('bar-tt').style.width=`${ttProm*10}%`; el('bar-tt').style.background=gradeColor(ttProm);
+  el('ap-tt').textContent = `(+${aTT.toFixed(2)})`;
 
-  // N3
-  el('g-n3').textContent = fmt(n3);
-  el('g-n3').style.color = gradeColor(n3);
-  const tpContainer = el('tp-stat-blocks');
-  tpContainer.innerHTML = '';
-  tpKeys.forEach((k, i) => {
-    const txt = s[k];
-    const val = tpNums[i];
-    const div = document.createElement('div');
-    div.className = 'stat-block';
-    div.innerHTML = `
-      <div class="stat-header">
-        <span class="stat-name">TP ${i+1} <span style="color:var(--muted);font-size:9px">16.7%</span></span>
-        <span class="stat-val" style="color:${txt?gradeColor(val):'var(--muted)'}">${txt?`${txt} · ${fmt(val)}`:'—'}</span>
-      </div>
-      <div class="stat-bar-track"><div class="stat-bar-fill" style="background:${gradeColor(val)};width:${val*10}%"></div></div>`;
-    tpContainer.appendChild(div);
+  const ttBtns = el('tt-btns'); ttBtns.innerHTML='';
+  const ttDets = el('tt-details'); ttDets.innerHTML='';
+  ttTexts.forEach((txt,i)=>{
+    const btn = document.createElement('div');
+    btn.className = `item-btn${txt?' done':''}`;
+    btn.textContent = i+1;
+    ttBtns.appendChild(btn);
+    if (txt) {
+      const det = document.createElement('div');
+      det.className = 'item-detail visible';
+      det.innerHTML = `
+        <div class="item-detail-header">
+          <span class="item-detail-name">TT ${i+1} — ${TT_LABELS[txt]||txt}</span>
+          <span class="item-detail-val" style="color:${gradeColor(ttNums[i])}">${txt} · ${fmt(ttNums[i])}</span>
+        </div>
+        <div class="item-detail-bar-track"><div class="item-detail-bar-fill" style="background:${gradeColor(ttNums[i])};width:${ttNums[i]*10}%"></div></div>`;
+      ttDets.appendChild(det);
+    }
+  });
+
+  el('g-exam').textContent = fmt(examen); el('g-exam').style.color = gradeColor(examen);
+  el('bar-exam').style.width=`${examen*10}%`; el('bar-exam').style.background=gradeColor(examen);
+  el('ap-exam').textContent = `(+${aExam.toFixed(2)})`;
+
+  // N3 - TPs
+  el('g-n3').textContent = fmt(n3); el('g-n3').style.color = gradeColor(n3);
+
+  const tpBtns = el('tp-btns'); tpBtns.innerHTML='';
+  const tpDets = el('tp-details'); tpDets.innerHTML='';
+  tpTexts.forEach((txt,i)=>{
+    const btn = document.createElement('div');
+    btn.className = `item-btn${txt?' done':''}`;
+    btn.textContent = i+1;
+    tpBtns.appendChild(btn);
+    if (txt) {
+      const det = document.createElement('div');
+      det.className = 'item-detail visible';
+      det.innerHTML = `
+        <div class="item-detail-header">
+          <span class="item-detail-name">TP ${i+1}</span>
+          <span class="item-detail-val" style="color:${gradeColor(tpNums[i])}">${txt} · ${fmt(tpNums[i])} <span style="opacity:0.6;font-size:9px">(+${(tpNums[i]/6).toFixed(2)})</span></span>
+        </div>
+        <div class="item-detail-bar-track"><div class="item-detail-bar-fill" style="background:${gradeColor(tpNums[i])};width:${tpNums[i]*10}%"></div></div>`;
+      tpDets.appendChild(det);
+    }
   });
 
   // Logros
   const achContainer = el('achievements');
   achContainer.innerHTML = '';
-  ACHIEVEMENT_GROUPS.forEach(group => {
-    const groupLabel = document.createElement('div');
-    groupLabel.className = 'ach-group';
-    groupLabel.textContent = '▸ ' + group.label;
-    achContainer.appendChild(groupLabel);
+  let totalUnlocked = 0;
+  ACH_GROUPS.forEach(group=>{
+    const glabel = document.createElement('div');
+    glabel.className = 'ach-group-label';
+    glabel.textContent = '▸ '+group.label;
+    achContainer.appendChild(glabel);
     const grid = document.createElement('div');
     grid.className = 'achievements-grid';
-    group.items.forEach(a => {
+    group.items.forEach(a=>{
       const unlocked = a.check(s);
+      if (unlocked) totalUnlocked++;
       const div = document.createElement('div');
-      div.className = `achievement ${unlocked ? 'unlocked' : 'locked'}`;
+      div.className = `achievement ${unlocked?'unlocked':'locked'}`;
       div.innerHTML = `<span class="ach-icon">${a.icon}</span><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div>`;
       grid.appendChild(div);
     });
     achContainer.appendChild(grid);
   });
+  el('g-ach-count').textContent = `${totalUnlocked}/18`;
 
   el('game-screen').classList.add('visible');
-  el('game-screen').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el('game-screen').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 loadGroup('LM').then(renderList);
