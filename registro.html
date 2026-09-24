@@ -304,6 +304,14 @@
 
 </div><!-- /perfil-wrap -->
 
+<!-- TIP -->
+<div class="card" id="tip-card" style="background:var(--surface);display:none;margin-top:0px;max-width:540px;margin-left:auto;margin-right:auto;">
+  <div class="card-left" style="border-right:none;padding:16px 18px;">
+    <div class="card-title" style="margin-bottom:10px">Tu progreso</div>
+    <p id="tip-text" style="font-size:12px;color:var(--muted);line-height:1.8;"></p>
+  </div>
+</div>
+
 
 
 <script>
@@ -466,6 +474,7 @@ function renderList(suffix) {
 function showProfile(idx) {
   document.querySelectorAll('.student-btn').forEach(b => b.classList.toggle('active', b.dataset.suffix===currentGroup && +b.dataset.idx===idx));
   el('perfil-wrap').style.display = 'block';
+  el('tip-card').style.display = 'none';
 
   const s = allData[currentGroup][idx];
   const p = pal(), ec = emptyColor();
