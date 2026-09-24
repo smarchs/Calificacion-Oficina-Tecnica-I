@@ -301,6 +301,15 @@
 </div>
 
 </div><!-- /layout -->
+
+<!-- TIP -->
+<div class="card" id="tip-card" style="background:var(--surface);margin-top:4px;">
+  <div class="card-left" style="border-right:none;padding:16px 18px;">
+    <div class="card-title" style="margin-bottom:10px">Análisis de tu progreso</div>
+    <p id="tip-text" style="font-size:12px;color:var(--muted);line-height:1.7;"></p>
+  </div>
+</div>
+
 </div><!-- /perfil-wrap -->
 
 
@@ -540,6 +549,55 @@ function showProfile(idx) {
   el('lbl-final').style.color = fc;
   const aN1=n1/3, aN2=n2/3, aN3=n3/3;
   makeDonut('chartFinal',[aN1,aN2,aN3,Math.max(0,10-aN1-aN2-aN3)],[p.n1,p.n2,p.n3,ec],'65%');
+
+  // ── TIP ──
+  const tipParts = [];
+
+  // Lo que va bien
+  const fortalezas = [];
+  if (asistVal >= 8) fortalezas.push('tu asistencia es muy buena');
+  if (s.eppPct >= 0.8) fortalezas.push('cumplís bien con el EPP');
+  if (particVal >= 7) fortalezas.push('tu participación en clase es destacada');
+  if (ttProm >= 7) fortalezas.push('las entregas teóricas están en buen nivel');
+  if (exVal >= 7) fortalezas.push('el examen te fue bien');
+  if (n3 >= 7) fortalezas.push('los trabajos prácticos muestran buen desempeño');
+
+  // Lo que falta mejorar
+  const debilidades = [];
+  if (asistVal < 6) debilidades.push('la asistencia (que pesa 20% en Compromiso)');
+  if (s.eppPct < 0.5) debilidades.push('el uso de EPP (20% en Compromiso)');
+  if (particVal < 5) debilidades.push('la participación en clase (60% en Compromiso)');
+  const ttEntregados = [s.ttTexts[0],s.ttTexts[1],s.ttTexts[2],s.ttTexts[3]].filter(t=>t&&t!=='N').length;
+  if (ttEntregados < 2) debilidades.push(`los trabajos teóricos (solo ${ttEntregados} de 4 entregados)`);
+  if (exVal === 0) debilidades.push('el examen (todavía no rendido, pesa 70% en Teoría)');
+  else if (exVal < 6) debilidades.push('el examen (está por debajo del aprobado)');
+  const tpEntregados = ['tp1','tp2','tp3','tp4','tp5','tp6'].filter(k=>s[k]&&s[k]!=='N').length;
+  if (tpEntregados < 3) debilidades.push(`los trabajos prácticos (solo ${tpEntregados} de 6 entregados)`);
+
+  // Qué hacer
+  const acciones = [];
+  if (asistVal < 6) acciones.push('priorizá venir a clase');
+  if (s.eppPct < 0.5) acciones.push('traé el equipo completo cada clase');
+  if (particVal < 5) acciones.push('involucrarte más durante la clase va a subir directo tu Nota 1');
+  if (ttEntregados < 4) acciones.push(`podés entregar los ${4-ttEntregados} TT que faltan`);
+  if (exVal < 6 || exVal === 0) acciones.push('concentrarte en el examen es clave, define el 70% de Teoría');
+  if (tpEntregados < 6) acciones.push(`entregar los ${6-tpEntregados} TP pendientes va a mejorar directo tu Nota 3`);
+
+  let tip = '';
+  if (fortalezas.length > 0) {
+    tip += `Lo que está funcionando: ${fortalezas.join(', ')}. `;
+  }
+  if (debilidades.length > 0) {
+    tip += `Lo que más está afectando tu nota es ${debilidades.join(' y ')}. `;
+  }
+  if (acciones.length > 0) {
+    tip += `Para subir: ${acciones.join(', ')}.`;
+  }
+  if (!tip) {
+    tip = 'Seguí así, todos los componentes están en buen nivel.';
+  }
+
+  el('tip-text').textContent = tip;
 
   el('perfil-wrap').scrollIntoView({behavior:'smooth',block:'start'});
 }
