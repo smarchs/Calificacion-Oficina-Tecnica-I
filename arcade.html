@@ -3,732 +3,619 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>OT·I — Arcade</title>
+<title>OT·I — Progresión</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
 :root {
-  --bg: #0a0a0f;
-  --panel: #12121a;
-  --border: #2a2a3a;
-  --text: #e0e0f0;
-  --muted: #5a5a7a;
-  --cyan: #00f5ff;
-  --purple: #b44fff;
-  --yellow: #ffe600;
-  --green: #00ff88;
-  --red: #ff3355;
-  --orange: #ff8800;
-  --font-pixel: 'Press Start 2P', monospace;
-  --font-mono: 'Share Tech Mono', monospace;
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --card: #16213e;
+  --border: rgba(255,255,255,0.08);
+  --text: #ffffff;
+  --muted: rgba(255,255,255,0.45);
+  --accent: #7c3aed;
+  --accent2: #06b6d4;
+  --gold: #f59e0b;
+  --green: #10b981;
+  --red: #ef4444;
+  --orange: #f97316;
+  --pink: #ec4899;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
-  background: var(--bg); color: var(--text);
-  font-family: var(--font-mono); min-height: 100vh; padding: 16px;
-}
-
-/* scanlines */
-body::before {
-  content: ''; position: fixed; inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
-  pointer-events: none; z-index: 9999;
-}
-
-/* corner decoration */
-body::after {
-  content: ''; position: fixed; inset: 0;
-  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,245,255,0.03) 100%);
-  pointer-events: none; z-index: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', system-ui, sans-serif;
+  min-height: 100vh;
+  padding-bottom: 40px;
 }
 
 /* ── HEADER ── */
-.arcade-header {
-  text-align: center; padding: 28px 0 20px;
-  border-bottom: 2px solid var(--border); margin-bottom: 24px;
+.header {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+  padding: 32px 20px 24px;
+  text-align: center;
   position: relative;
+  overflow: hidden;
 }
-.arcade-header::before, .arcade-header::after {
-  content: '◄◄◄'; font-family: var(--font-pixel); font-size: 8px;
-  color: var(--muted); position: absolute; top: 50%; transform: translateY(-50%);
+.header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(124,58,237,0.3), transparent 60%),
+              radial-gradient(circle at 70% 50%, rgba(6,182,212,0.2), transparent 60%);
 }
-.arcade-header::before { left: 0; }
-.arcade-header::after { right: 0; content: '►►►'; }
+.header-game { font-size: 11px; font-weight: 700; color: var(--accent2); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; position: relative; }
+.header-title { font-size: clamp(22px,6vw,32px); font-weight: 900; color: #fff; position: relative; margin-bottom: 4px; }
+.header-sub { font-size: 13px; color: rgba(255,255,255,0.5); position: relative; }
 
-.arcade-title {
-  font-family: var(--font-pixel); font-size: clamp(10px,3vw,18px);
-  color: var(--cyan); letter-spacing: 3px; margin-bottom: 4px;
-  text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,255,0.3);
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-.arcade-subtitle {
-  font-family: var(--font-pixel); font-size: clamp(6px,1.5vw,9px);
-  color: var(--purple); letter-spacing: 2px; margin-bottom: 8px;
-}
-.arcade-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
-
-@keyframes glow-pulse {
-  0%,100% { text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,255,0.3); }
-  50%      { text-shadow: 0 0 35px var(--cyan), 0 0 70px rgba(0,245,255,0.5), 0 0 100px rgba(0,245,255,0.15); }
-}
-
-/* ── INSERT COIN ── */
-.insert-coin {
-  font-family: var(--font-pixel); font-size: 8px; color: var(--yellow);
-  text-align: center; margin-bottom: 20px; letter-spacing: 1px;
-  animation: blink 1s step-end infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+/* ── CONTENT ── */
+.content { max-width: 480px; margin: 0 auto; padding: 16px; }
 
 /* ── SELECTOR ── */
-.selector-panel {
-  background: var(--panel); border: 2px solid var(--border);
-  padding: 16px; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;
-  position: relative;
+.selector-card {
+  background: var(--surface);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
 }
-.selector-panel::before {
-  content: 'SELECT PLAYER'; font-family: var(--font-pixel); font-size: 6px;
-  color: var(--muted); position: absolute; top: -9px; left: 12px;
-  background: var(--panel); padding: 0 6px;
-}
-.selector-label { font-family: var(--font-pixel); font-size: 7px; color: var(--purple); margin-bottom: 10px; letter-spacing: 1px; }
-.group-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.group-tabs { display: grid; grid-template-columns: 1fr 1fr; }
 .group-tab {
-  flex: 1; padding: 10px; background: var(--bg); border: 2px solid var(--border);
-  color: var(--muted); font-family: var(--font-pixel); font-size: 7px;
-  cursor: pointer; text-align: center; transition: all 0.1s; position: relative; overflow: hidden;
+  padding: 14px; text-align: center; font-size: 13px; font-weight: 800;
+  color: var(--muted); cursor: pointer; border: none; background: transparent;
+  font-family: inherit; transition: all 0.2s; border-bottom: 3px solid transparent;
 }
-.group-tab::after { content: ''; position: absolute; inset: 0; background: var(--cyan); opacity: 0; transition: opacity 0.1s; }
-.group-tab.active { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 15px rgba(0,245,255,0.3), inset 0 0 10px rgba(0,245,255,0.05); }
-.player-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 6px; max-height: 240px; overflow-y: auto; }
-.player-btn {
-  padding: 9px 10px; background: var(--bg); border: 2px solid var(--border);
-  color: var(--text); font-family: var(--font-mono); font-size: 12px;
-  cursor: pointer; text-align: left; display: flex; justify-content: space-between;
-  align-items: center; transition: all 0.1s; width: 100%; position: relative;
+.group-tab.active { color: var(--text); border-bottom-color: var(--accent); background: rgba(124,58,237,0.1); }
+.divider { height: 1px; background: var(--border); }
+.player-list { padding: 8px; display: flex; flex-direction: column; gap: 4px; max-height: 300px; overflow-y: auto; }
+.player-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 14px; cursor: pointer;
+  transition: all 0.15s; border: 1px solid transparent;
 }
-.player-btn:hover { border-color: var(--purple); color: var(--purple); transform: translateX(2px); }
-.player-btn.active { border-color: var(--yellow); color: var(--yellow); box-shadow: 0 0 12px rgba(255,230,0,0.25); }
-.player-btn.active::before { content: '▶'; position: absolute; left: -2px; font-family: var(--font-pixel); font-size: 8px; color: var(--yellow); }
-.player-rank { font-family: var(--font-pixel); font-size: 6px; }
+.player-item:hover { background: rgba(255,255,255,0.05); }
+.player-item.active { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.4); }
+.player-avatar {
+  width: 38px; height: 38px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 900; flex-shrink: 0;
+}
+.player-info { flex: 1; min-width: 0; }
+.player-name-short { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-rank-label { font-size: 11px; font-weight: 600; margin-top: 1px; }
+.player-score { font-size: 18px; font-weight: 900; flex-shrink: 0; }
 
-.state-msg { text-align: center; padding: 20px; font-size: 11px; color: var(--muted); }
-.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 8px; }
+.state-msg { text-align: center; padding: 24px; font-size: 13px; color: var(--muted); }
+.spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 10px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── GAME SCREEN ── */
-.game-screen { display: none; max-width: 600px; margin: 0 auto; }
-.game-screen.visible { display: block; }
+/* ── PROFILE ── */
+.profile { display: none; }
+.profile.visible { display: block; }
 
-/* Player card */
-.player-card {
-  background: var(--panel); border: 2px solid var(--cyan);
-  box-shadow: 0 0 30px rgba(0,245,255,0.12), inset 0 0 30px rgba(0,245,255,0.02);
-  padding: 20px; margin-bottom: 12px; position: relative; overflow: hidden;
+/* Hero card */
+.hero-card {
+  border-radius: 24px; padding: 24px; margin-bottom: 14px;
+  position: relative; overflow: hidden;
 }
-.player-card::before {
-  content: ''; position: absolute; top: 0; left: -100%; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  animation: scan-line 2.5s linear infinite;
+.hero-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #1e1b4b, #312e81, #4c1d95);
 }
-@keyframes scan-line { to { left: 100%; } }
+.hero-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(6,182,212,0.25), transparent 50%);
+}
+.hero-content { position: relative; }
+.hero-tag { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.hero-name { font-size: clamp(16px,5vw,22px); font-weight: 900; color: #fff; margin-bottom: 14px; line-height: 1.2; }
 
-.player-tag {
-  font-family: var(--font-pixel); font-size: 6px; color: var(--muted);
-  margin-bottom: 6px; letter-spacing: 1px;
-}
-.player-name {
-  font-family: var(--font-pixel); font-size: clamp(8px,2.5vw,13px);
-  color: var(--yellow); text-shadow: 0 0 15px rgba(255,230,0,0.4);
-  margin-bottom: 4px; letter-spacing: 1px;
-}
-.rank-badge {
-  font-family: var(--font-pixel); font-size: clamp(10px,3vw,15px);
-  margin-bottom: 16px; letter-spacing: 1px;
+.rank-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px; margin-bottom: 20px;
+  font-size: 13px; font-weight: 800;
 }
 
-/* Level + XP */
+/* Level row */
 .level-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
-.level-badge {
-  font-family: var(--font-pixel); font-size: clamp(32px,9vw,52px);
-  color: var(--cyan); text-shadow: 0 0 40px var(--cyan), 0 0 80px rgba(0,245,255,0.3);
-  line-height: 1; flex-shrink: 0; position: relative;
-}
-.level-badge .lbl { font-size: 0.35em; color: var(--muted); display: block; margin-bottom: 2px; }
-.level-info { flex: 1; }
-.xp-label { font-size: 9px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.5px; }
-.xp-bar-track { height: 14px; background: var(--bg); border: 2px solid var(--border); overflow: hidden; position: relative; }
-.xp-bar-fill {
-  height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple));
-  transition: width 1s cubic-bezier(0.34,1.56,0.64,1);
+.level-circle {
+  width: 70px; height: 70px; border-radius: 50%; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.1); border: 3px solid rgba(255,255,255,0.3);
   position: relative;
 }
-.xp-bar-fill::after {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255,255,255,0.1) 4px, rgba(255,255,255,0.1) 6px);
+.level-circle::before {
+  content: ''; position: absolute; inset: -4px;
+  border-radius: 50%; border: 3px solid transparent;
+  border-top-color: var(--accent2);
+  animation: rotate 3s linear infinite;
 }
-.xp-segments {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  display: flex; pointer-events: none;
+@keyframes rotate { to { transform: rotate(360deg); } }
+.level-num { font-size: 26px; font-weight: 900; color: #fff; line-height: 1; }
+.level-lbl { font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+.level-info { flex: 1; }
+.xp-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+.xp-bar {
+  height: 10px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; margin-bottom: 4px;
 }
-.xp-seg { flex: 1; border-right: 1px solid rgba(0,0,0,0.3); }
-.xp-text { font-size: 9px; color: var(--cyan); margin-top: 4px; text-align: right; font-family: var(--font-pixel); }
+.xp-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative; overflow: hidden;
+}
+.xp-fill::after {
+  content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer { to { left: 200%; } }
+.xp-nums { font-size: 10px; color: rgba(255,255,255,0.5); text-align: right; font-weight: 600; }
 
 /* Motivation */
-.motivation-box {
-  padding: 10px 12px; border-left: 3px solid var(--green);
-  background: rgba(0,255,136,0.04); margin-top: 4px;
+.motivation {
+  background: rgba(255,255,255,0.07); border-radius: 14px;
+  padding: 12px 14px; border-left: 4px solid var(--green);
 }
-.motivation-main { font-size: 12px; color: var(--green); margin-bottom: 6px; line-height: 1.6; }
-.motivation-tip { font-size: 10px; color: var(--muted); line-height: 1.5; }
+.motivation-main { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.4; }
+.motivation-tip { font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.4; }
 
 /* Final score */
-.final-display {
-  background: var(--panel); border: 2px solid var(--yellow);
-  box-shadow: 0 0 30px rgba(255,230,0,0.12);
-  padding: 20px; margin-bottom: 12px; text-align: center; position: relative; overflow: hidden;
+.score-card {
+  background: var(--surface); border-radius: 20px;
+  padding: 20px; margin-bottom: 14px; text-align: center;
+  border: 1px solid var(--border); position: relative; overflow: hidden;
 }
-.final-display::before {
+.score-card::before {
   content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at center, rgba(255,230,0,0.04) 0%, transparent 70%);
+  background: radial-gradient(circle at 50% 0%, rgba(245,158,11,0.1), transparent 60%);
 }
-.final-label { font-family: var(--font-pixel); font-size: 7px; color: var(--muted); margin-bottom: 10px; letter-spacing: 1px; }
-.final-val { font-family: var(--font-pixel); font-size: clamp(36px,11vw,60px); line-height: 1; margin-bottom: 6px; }
-.final-sub { font-size: 10px; color: var(--muted); }
+.score-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.score-val { font-size: clamp(48px,15vw,72px); font-weight: 900; line-height: 1; margin-bottom: 4px; }
+.score-sub { font-size: 13px; color: var(--muted); font-weight: 600; }
 
-/* Stats sections */
-.section-header {
+/* Section */
+.section-title {
+  font-size: 11px; font-weight: 800; color: var(--muted);
+  letter-spacing: 2px; text-transform: uppercase;
   display: flex; justify-content: space-between; align-items: center;
-  margin: 20px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px;
+  margin: 20px 0 10px;
 }
-.section-title { font-family: var(--font-pixel); font-size: 8px; color: var(--purple); letter-spacing: 1px; }
-.section-nota { font-family: var(--font-pixel); font-size: 10px; }
+.section-nota { font-size: 16px; font-weight: 900; }
 
-/* Stat blocks */
-.stat-block {
-  background: var(--panel); border: 2px solid var(--border);
-  padding: 12px 14px; margin-bottom: 8px;
+/* Stat card */
+.stat-card {
+  background: var(--surface); border-radius: 16px;
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border);
 }
-.stat-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-.stat-name { font-size: 11px; color: var(--muted); }
-.stat-pct { font-size: 9px; color: var(--muted); margin-left: 4px; }
-.stat-val { font-family: var(--font-pixel); font-size: 10px; }
-.stat-aporte { font-size: 9px; color: var(--muted); margin-left: 4px; font-family: var(--font-mono); }
-.stat-bar-track { height: 6px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; margin-bottom: 6px; }
-.stat-bar-fill { height: 100%; transition: width 0.5s ease; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.stat-name { font-size: 14px; font-weight: 700; }
+.stat-pct-tag { font-size: 10px; font-weight: 700; color: var(--muted); background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 20px; margin-left: 6px; }
+.stat-right { text-align: right; }
+.stat-val { font-size: 16px; font-weight: 900; }
+.stat-aporte { font-size: 11px; color: var(--muted); font-weight: 600; }
+.bar { height: 8px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
 
-/* Item grid (TTs/TPs buttons) */
-.item-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+/* Item buttons */
+.item-btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
 .item-btn {
-  width: 28px; height: 24px; background: var(--bg); border: 2px solid var(--border);
-  color: var(--muted); font-family: var(--font-pixel); font-size: 7px;
+  width: 36px; height: 36px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800;
+  background: rgba(255,255,255,0.06); color: var(--muted); border: 2px solid rgba(255,255,255,0.08);
 }
-.item-btn.done { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 6px rgba(0,245,255,0.3); }
+.item-btn.done { background: rgba(124,58,237,0.2); color: var(--text); border-color: rgba(124,58,237,0.5); }
 
-/* Item detail rows */
+/* Item details */
 .item-detail {
-  background: rgba(0,245,255,0.03); border-left: 2px solid var(--border);
-  padding: 6px 10px; margin-bottom: 5px; display: none;
+  background: rgba(255,255,255,0.04); border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 6px;
 }
-.item-detail.visible { display: block; border-left-color: var(--cyan); }
-.item-detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.item-detail-name { font-size: 10px; color: var(--muted); }
-.item-detail-val { font-family: var(--font-pixel); font-size: 9px; }
-.item-detail-bar-track { height: 4px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
-.item-detail-bar-fill { height: 100%; transition: width 0.4s; }
+.item-detail-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.item-detail-name { font-size: 12px; color: var(--muted); font-weight: 600; }
+.item-detail-val { font-size: 13px; font-weight: 800; }
+.item-detail-aporte { font-size: 10px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+.mini-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+.mini-bar-fill { height: 100%; border-radius: 999px; }
 
 /* Achievements */
-.ach-group-label { font-family: var(--font-pixel); font-size: 7px; color: var(--purple); margin: 16px 0 8px; letter-spacing: 1px; }
-.achievements-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
-.achievement {
-  background: var(--panel); border: 2px solid var(--border);
-  padding: 10px 6px; text-align: center; transition: all 0.2s;
+.ach-section-label { font-size: 11px; font-weight: 800; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin: 14px 0 8px; }
+.ach-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 4px; }
+.ach-card {
+  background: var(--surface); border-radius: 14px;
+  padding: 12px 8px; text-align: center;
+  border: 1px solid var(--border); transition: all 0.2s;
 }
-.achievement.unlocked {
-  border-color: var(--yellow);
-  box-shadow: 0 0 14px rgba(255,230,0,0.2), inset 0 0 10px rgba(255,230,0,0.03);
+.ach-card.unlocked {
+  background: rgba(245,158,11,0.1);
+  border-color: rgba(245,158,11,0.4);
+  box-shadow: 0 0 20px rgba(245,158,11,0.1);
 }
-.achievement.locked { opacity: 0.25; }
-.ach-icon { font-family: var(--font-pixel); font-size: 10px; color: var(--yellow); margin-bottom: 6px; display: block; letter-spacing: -1px; }
-.ach-name { font-family: var(--font-pixel); font-size: 5px; color: var(--yellow); margin-bottom: 4px; line-height: 1.6; }
-.ach-desc { font-size: 9px; color: var(--muted); line-height: 1.4; }
-
-/* Pixel corners on panels */
-.pixel-panel {
-  position: relative;
-}
-.pixel-panel::before, .pixel-panel::after {
-  content: ''; position: absolute; width: 6px; height: 6px;
-  background: var(--cyan);
-}
-.pixel-panel::before { top: -3px; left: -3px; }
-.pixel-panel::after  { bottom: -3px; right: -3px; }
-
-@media (min-width: 700px) {
-  body { padding: 28px; }
-  .arcade-title { font-size: 22px; }
+.ach-card.locked { opacity: 0.3; }
+.ach-emoji { font-size: 22px; margin-bottom: 6px; display: block; }
+.ach-name { font-size: 9px; font-weight: 800; color: var(--gold); margin-bottom: 3px; line-height: 1.3; text-transform: uppercase; letter-spacing: 0.5px; }
+.ach-desc { font-size: 10px; color: var(--muted); line-height: 1.3; font-weight: 600; }
+.ach-count-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3);
+  padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; color: var(--gold);
 }
 </style>
 </head>
 <body>
 
-<div class="arcade-header">
-  <div class="arcade-title">OFICINA TÉCNICA I</div>
-  <div class="arcade-subtitle">SISTEMA DE PROGRESIÓN</div>
-  <div class="arcade-sub">Docente: Silva Sergio Marcelo · 2026</div>
+<div class="header">
+  <div class="header-game">Oficina Técnica I · 2026</div>
+  <div class="header-title">Tu Progreso</div>
+  <div class="header-sub">Docente: Silva Sergio Marcelo</div>
 </div>
 
-<div class="insert-coin">▼ SELECCIONÁ TU PERSONAJE ▼</div>
+<div class="content">
 
-<div class="selector-panel">
-  <div class="selector-label">// GRUPO</div>
-  <div class="group-tabs">
-    <button class="group-tab active" onclick="selectGroup('LM')">◄ LUNES · MIÉRCOLES ►</button>
-    <button class="group-tab" onclick="selectGroup('MJ')">◄ MARTES · JUEVES ►</button>
+  <!-- Selector -->
+  <div class="selector-card">
+    <div class="group-tabs">
+      <button class="group-tab active" onclick="selectGroup('LM')">Lunes y Miércoles</button>
+      <button class="group-tab" onclick="selectGroup('MJ')">Martes y Jueves</button>
+    </div>
+    <div class="divider"></div>
+    <div class="player-list" id="player-list">
+      <div class="state-msg"><div class="spinner"></div>Cargando jugadores...</div>
+    </div>
   </div>
-  <div class="selector-label">// JUGADOR</div>
-  <div class="player-list" id="player-list">
-    <div class="state-msg"><div class="spinner"></div>Cargando...</div>
-  </div>
-</div>
 
-<div class="game-screen" id="game-screen">
+  <!-- Profile -->
+  <div class="profile" id="profile">
 
-  <!-- Player card -->
-  <div class="player-card">
-    <div class="player-tag">// JUGADOR ACTIVO</div>
-    <div class="player-name" id="g-name">—</div>
-    <div class="rank-badge" id="g-rank">—</div>
-    <div class="level-row">
-      <div class="level-badge"><span class="lbl">NIVEL</span><span id="g-level">—</span></div>
-      <div class="level-info">
-        <div class="xp-label">▸ XP HACIA NIVEL <span id="g-next">—</span></div>
-        <div class="xp-bar-track">
-          <div class="xp-bar-fill" id="g-xpbar" style="width:0%"></div>
-          <div class="xp-segments" id="g-xp-segs"></div>
+    <!-- Hero -->
+    <div class="hero-card">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <div class="hero-tag">Jugador activo</div>
+        <div class="hero-name" id="p-name">—</div>
+        <div class="rank-chip" id="p-rank-chip">—</div>
+        <div class="level-row">
+          <div class="level-circle">
+            <div class="level-num" id="p-level">—</div>
+            <div class="level-lbl">nivel</div>
+          </div>
+          <div class="level-info">
+            <div class="xp-title">XP hacia nivel <span id="p-next">—</span></div>
+            <div class="xp-bar"><div class="xp-fill" id="p-xpbar" style="width:0%"></div></div>
+            <div class="xp-nums"><span id="p-xp-cur">0</span> / 100 XP</div>
+          </div>
         </div>
-        <div class="xp-text"><span id="g-xp-cur">0</span> / <span id="g-xp-max">100</span> XP</div>
+        <div class="motivation">
+          <div class="motivation-main" id="p-mot-main">—</div>
+          <div class="motivation-tip" id="p-mot-tip">—</div>
+        </div>
       </div>
     </div>
-    <div class="motivation-box">
-      <div class="motivation-main" id="g-motivation-main">—</div>
-      <div class="motivation-tip" id="g-motivation-tip">—</div>
+
+    <!-- Score -->
+    <div class="score-card">
+      <div class="score-label">Nota Final del Bimestre</div>
+      <div class="score-val" id="p-final">—</div>
+      <div class="score-sub" id="p-final-sub">—</div>
     </div>
-  </div>
 
-  <!-- Final -->
-  <div class="final-display">
-    <div class="final-label">// PUNTUACIÓN FINAL DEL BIMESTRE</div>
-    <div class="final-val" id="g-final">—</div>
-    <div class="final-sub" id="g-final-sub">—</div>
-  </div>
-
-  <!-- N1: Compromiso -->
-  <div class="section-header">
-    <span class="section-title">▸ COMPROMISO</span>
-    <span class="section-nota" id="g-n1">—</span>
-  </div>
-
-  <div class="stat-block">
-    <div class="stat-header">
-      <span class="stat-name">Asistencia <span class="stat-pct">20%</span></span>
-      <span><span class="stat-val" id="g-asist">—</span><span class="stat-aporte" id="ap-asist"></span></span>
+    <!-- N1 -->
+    <div class="section-title">
+      <span>Compromiso</span>
+      <span class="section-nota" id="p-n1">—</span>
     </div>
-    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-asist" style="width:0%"></div></div>
-  </div>
 
-  <div class="stat-block">
-    <div class="stat-header">
-      <span class="stat-name">EPP <span class="stat-pct">20%</span></span>
-      <span><span class="stat-val" id="g-epp">—</span><span class="stat-aporte" id="ap-epp"></span></span>
+    <div class="stat-card">
+      <div class="stat-row">
+        <div><span class="stat-name">Asistencia</span><span class="stat-pct-tag">20%</span></div>
+        <div class="stat-right"><div class="stat-val" id="p-asist">—</div><div class="stat-aporte" id="ap-asist"></div></div>
+      </div>
+      <div class="bar"><div class="bar-fill" id="bar-asist" style="width:0%"></div></div>
     </div>
-    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-epp" style="width:0%"></div></div>
-  </div>
 
-  <div class="stat-block">
-    <div class="stat-header">
-      <span class="stat-name">Participación <span class="stat-pct">60%</span></span>
-      <span><span class="stat-val" id="g-partic">—</span><span class="stat-aporte" id="ap-partic"></span></span>
+    <div class="stat-card">
+      <div class="stat-row">
+        <div><span class="stat-name">EPP</span><span class="stat-pct-tag">20%</span></div>
+        <div class="stat-right"><div class="stat-val" id="p-epp">—</div><div class="stat-aporte" id="ap-epp"></div></div>
+      </div>
+      <div class="bar"><div class="bar-fill" id="bar-epp" style="width:0%"></div></div>
     </div>
-    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-partic" style="width:0%"></div></div>
-  </div>
 
-  <!-- N2: Teoría -->
-  <div class="section-header">
-    <span class="section-title">▸ TEORÍA</span>
-    <span class="section-nota" id="g-n2">—</span>
-  </div>
-
-  <div class="stat-block">
-    <div class="stat-header">
-      <span class="stat-name">Trabajos Teóricos <span class="stat-pct">30%</span></span>
-      <span><span class="stat-val" id="g-tt">—</span><span class="stat-aporte" id="ap-tt"></span></span>
+    <div class="stat-card">
+      <div class="stat-row">
+        <div><span class="stat-name">Participación</span><span class="stat-pct-tag">60%</span></div>
+        <div class="stat-right"><div class="stat-val" id="p-partic">—</div><div class="stat-aporte" id="ap-partic"></div></div>
+      </div>
+      <div class="bar"><div class="bar-fill" id="bar-partic" style="width:0%"></div></div>
     </div>
-    <div class="item-grid" id="tt-btns"></div>
-    <div id="tt-details"></div>
-    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-tt" style="width:0%"></div></div>
-  </div>
 
-  <div class="stat-block">
-    <div class="stat-header">
-      <span class="stat-name">Examen <span class="stat-pct">70%</span></span>
-      <span><span class="stat-val" id="g-exam">—</span><span class="stat-aporte" id="ap-exam"></span></span>
+    <!-- N2 -->
+    <div class="section-title">
+      <span>Teoría</span>
+      <span class="section-nota" id="p-n2">—</span>
     </div>
-    <div class="stat-bar-track"><div class="stat-bar-fill" id="bar-exam" style="width:0%"></div></div>
-  </div>
 
-  <!-- N3: Práctica -->
-  <div class="section-header">
-    <span class="section-title">▸ PRÁCTICA</span>
-    <span class="section-nota" id="g-n3">—</span>
-  </div>
-
-  <div class="stat-block">
-    <div class="stat-header">
-      <span class="stat-name">Trabajos Prácticos <span class="stat-pct">100%</span></span>
+    <div class="stat-card">
+      <div class="stat-row">
+        <div><span class="stat-name">Trabajos Teóricos</span><span class="stat-pct-tag">30%</span></div>
+        <div class="stat-right"><div class="stat-val" id="p-tt">—</div><div class="stat-aporte" id="ap-tt"></div></div>
+      </div>
+      <div class="item-btns" id="tt-btns"></div>
+      <div id="tt-details"></div>
+      <div class="bar"><div class="bar-fill" id="bar-tt" style="width:0%"></div></div>
     </div>
-    <div class="item-grid" id="tp-btns"></div>
-    <div id="tp-details"></div>
-  </div>
 
-  <!-- Logros -->
-  <div class="section-header">
-    <span class="section-title">▸ LOGROS</span>
-    <span class="section-nota" id="g-ach-count" style="color:var(--yellow)">—</span>
-  </div>
-  <div id="achievements"></div>
+    <div class="stat-card">
+      <div class="stat-row">
+        <div><span class="stat-name">Examen</span><span class="stat-pct-tag">70%</span></div>
+        <div class="stat-right"><div class="stat-val" id="p-exam">—</div><div class="stat-aporte" id="ap-exam"></div></div>
+      </div>
+      <div class="bar"><div class="bar-fill" id="bar-exam" style="width:0%"></div></div>
+    </div>
 
+    <!-- N3 -->
+    <div class="section-title">
+      <span>Práctica</span>
+      <span class="section-nota" id="p-n3">—</span>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-row">
+        <div><span class="stat-name">Trabajos Prácticos</span></div>
+      </div>
+      <div class="item-btns" id="tp-btns"></div>
+      <div id="tp-details"></div>
+    </div>
+
+    <!-- Logros -->
+    <div class="section-title">
+      <span>Logros</span>
+      <span class="ach-count-badge" id="p-ach-count">0/18</span>
+    </div>
+    <div id="achievements"></div>
+
+  </div>
 </div>
 
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNyF__3pe3B04CQVqgT__Bsly2KvkDjuHE-nG3PANiuw5ddrAqwH4cMQN_9MyVcqk/exec';
 const el = id => document.getElementById(id);
-const fmt = n => Math.abs(n-10)<1e-6 ? '10' : Number(n).toFixed(1);
+const fmt = n => Math.abs(n-10)<1e-6?'10':Number(n).toFixed(1);
 const sum = arr => arr.reduce((a,b)=>a+b,0);
 
 function gradeColor(n) {
-  if (n >= 8) return 'var(--green)';
-  if (n >= 6) return 'var(--cyan)';
-  if (n >= 4) return 'var(--yellow)';
-  return 'var(--red)';
+  if (n>=8) return '#10b981';
+  if (n>=6) return '#06b6d4';
+  if (n>=4) return '#f59e0b';
+  return '#ef4444';
 }
 
-function ttTextToNum(txt, n1) {
-  if (txt==='T')  return 10;
-  if (txt==='T1') return n1>=9?9:8;
-  if (txt==='T2') return n1>=7?7:6;
-  if (txt==='T3') return n1>=5?5:4;
-  if (txt==='T4') return n1<2?1:n1<3?2:3;
-  return 0;
-}
-function tpTextToNum(txt, n1) {
-  if (txt==='E')  return 10;
-  if (txt==='MB') return 9;
-  if (txt==='B')  return n1>=8?8:7;
-  if (txt==='R')  return n1>=6?6:5;
-  if (txt==='I')  return n1<2?1:n1<3?2:n1<4?3:4;
-  return 0;
-}
+function ttTextToNum(t,n1){if(t==='T')return 10;if(t==='T1')return n1>=9?9:8;if(t==='T2')return n1>=7?7:6;if(t==='T3')return n1>=5?5:4;if(t==='T4')return n1<2?1:n1<3?2:3;return 0;}
+function tpTextToNum(t,n1){if(t==='E')return 10;if(t==='MB')return 9;if(t==='B')return n1>=8?8:7;if(t==='R')return n1>=6?6:5;if(t==='I')return n1<2?1:n1<3?2:n1<4?3:4;return 0;}
+const TT_LABELS={T:'A tiempo',T1:'1 clase tarde',T2:'2 clases tarde',T3:'3 clases tarde',T4:'4 clases tarde'};
 
-const TT_LABELS = {T:'A tiempo',T1:'1 clase tarde',T2:'2 clases tarde',T3:'3 clases tarde',T4:'4 clases tarde'};
-
-// ── RANGOS ──
-const RANKS = [
-  [9.5,'Clase S','var(--cyan)'],
-  [9.0,'Clase A+','var(--green)'],
-  [8.5,'Clase A','var(--green)'],
-  [8.0,'Clase A−','var(--green)'],
-  [7.5,'Clase B+','var(--cyan)'],
-  [7.0,'Clase B','var(--cyan)'],
-  [6.5,'Clase B−','var(--cyan)'],
-  [6.0,'Clase C+','var(--yellow)'],
-  [5.5,'Clase C','var(--yellow)'],
-  [5.0,'Clase C−','var(--yellow)'],
-  [4.5,'Clase D+','var(--orange)'],
-  [4.0,'Clase D','var(--orange)'],
-  [0,'Clase F','var(--red)'],
+const RANKS=[
+  [9.5,'Clase S','#06b6d4','linear-gradient(135deg,#0e7490,#06b6d4)'],
+  [9.0,'Clase A+','#10b981','linear-gradient(135deg,#065f46,#10b981)'],
+  [8.5,'Clase A','#10b981','linear-gradient(135deg,#065f46,#10b981)'],
+  [8.0,'Clase A−','#10b981','linear-gradient(135deg,#065f46,#10b981)'],
+  [7.5,'Clase B+','#7c3aed','linear-gradient(135deg,#4c1d95,#7c3aed)'],
+  [7.0,'Clase B','#7c3aed','linear-gradient(135deg,#4c1d95,#7c3aed)'],
+  [6.5,'Clase B−','#7c3aed','linear-gradient(135deg,#4c1d95,#7c3aed)'],
+  [6.0,'Clase C+','#f59e0b','linear-gradient(135deg,#78350f,#f59e0b)'],
+  [5.5,'Clase C','#f59e0b','linear-gradient(135deg,#78350f,#f59e0b)'],
+  [5.0,'Clase C−','#f59e0b','linear-gradient(135deg,#78350f,#f59e0b)'],
+  [4.5,'Clase D+','#f97316','linear-gradient(135deg,#7c2d12,#f97316)'],
+  [4.0,'Clase D','#f97316','linear-gradient(135deg,#7c2d12,#f97316)'],
+  [0,'Clase F','#ef4444','linear-gradient(135deg,#7f1d1d,#ef4444)'],
 ];
-function getRank(nf) {
-  for (const [min,label,color] of RANKS) if (nf>=min) return {label,color};
-  return {label:'Clase F',color:'var(--red)'};
-}
+function getRank(nf){for(const[m,l,c,g]of RANKS)if(nf>=m)return{label:l,color:c,grad:g};return{label:'Clase F',color:'#ef4444',grad:'linear-gradient(135deg,#7f1d1d,#ef4444)'};}
 
-// ── XP ──
-function xpLevel(nf) {
-  const xp = Math.round(nf*100);
-  const level = Math.min(Math.floor(xp/100),10);
-  const cur = xp%100;
-  return {level, cur, pct: level>=10?100:cur};
-}
+function xpLevel(nf){const xp=Math.round(nf*100);const level=Math.min(Math.floor(xp/100),10);const cur=xp%100;return{level,cur,pct:level>=10?100:cur};}
 
-// ── FRASES ──
-const MOTIVATIONS = {
-  high:[
-    "Logro desbloqueado. Seguís escribiendo tu mejor partida.",
-    "Nivel de compromiso: legendario. El taller te reconoce.",
-    "Sos el tipo de jugador que otros quieren tener en el equipo."
-  ],
-  mid:[
-    "Estás en racha. Un componente más y desbloqueás el siguiente nivel.",
-    "Ya demostraste que podés. Ahora es solo cuestión de mantenerlo.",
-    "La constancia es el truco que nadie te cuenta. Seguí."
-  ],
-  low:[
-    "Toda partida épica arranca desde cero. La tuya todavía está escribiéndose.",
-    "Cada clase que venís suma puntos reales. No subestimes lo que acumula con el tiempo.",
-    "Los mejores no nacieron siendo buenos — practicaron. Vos también podés."
-  ],
+const AVATARS=['🎯','⚡','🔥','🌟','🚀','💎','🏆','🎮','🛠️','⚙️','🔧','📐'];
+function getAvatar(i){return AVATARS[i%AVATARS.length];}
+
+const MOTIVATIONS={
+  high:["Logro desbloqueado. Seguís escribiendo tu mejor partida.","Nivel de compromiso: legendario. El taller te reconoce.","Sos el tipo de jugador que otros quieren tener en el equipo."],
+  mid:["Estás en racha. Un componente más y desbloqueás el siguiente nivel.","Ya demostraste que podés. Ahora es solo cuestión de mantenerlo.","La constancia es el truco que nadie te cuenta. Seguí."],
+  low:["Toda partida épica arranca desde cero. La tuya todavía está escribiéndose.","Cada clase que venís suma puntos reales. No subestimes lo que acumula con el tiempo.","Los mejores no nacieron siendo buenos — practicaron. Vos también podés."],
   nodata:["Tu partida todavía no empezó. Vení a clase y empezá a sumar puntos."]
 };
-const TIPS = {
-  asist: "Falta presencia — sin venir no se puede mejorar.",
-  epp:   "Traé el equipo completo la próxima clase. Es el punto más fácil de recuperar.",
+const TIPS={
+  asist:"Falta presencia — sin venir no se puede mejorar.",
+  epp:"Traé el equipo completo la próxima clase. Es el punto más fácil de recuperar.",
   partic:"Involucrarte en clase es lo que más pesa en Compromiso. Animate a participar más.",
-  tt:    "Todavía podés entregar trabajos teóricos. Cada entrega mueve la aguja.",
-  exam:  "El examen define el 70% de Teoría. Vale la pena dedicarle tiempo.",
-  tp:    "Los trabajos prácticos son tu mayor palanca. Cada uno que entregás suma directo."
+  tt:"Todavía podés entregar trabajos teóricos. Cada entrega mueve la aguja.",
+  exam:"El examen define el 70% de Teoría. Vale la pena dedicarle tiempo.",
+  tp:"Los trabajos prácticos son tu mayor palanca. Cada uno que entregás suma directo."
 };
+function getMotivation(nf){if(!nf)return MOTIVATIONS.nodata[0];const p=nf>=7.5?MOTIVATIONS.high:nf>=5?MOTIVATIONS.mid:MOTIVATIONS.low;return p[Math.floor(Math.random()*p.length)];}
+function getWeakTip(scores){return TIPS[Object.entries(scores).sort((a,b)=>a[1]-b[1])[0][0]];}
 
-function getMotivation(nf) {
-  if (!nf) return MOTIVATIONS.nodata[0];
-  const pool = nf>=7.5?MOTIVATIONS.high:nf>=5?MOTIVATIONS.mid:MOTIVATIONS.low;
-  return pool[Math.floor(Math.random()*pool.length)];
-}
-function getWeakTip(scores) {
-  const key = Object.entries(scores).sort((a,b)=>a[1]-b[1])[0][0];
-  return TIPS[key];
-}
-
-// ── LOGROS ──
-const ACH_GROUPS = [
-  { label:'ASISTENCIA', items:[
-    {name:'PRESENTE',       desc:'Asistencia > 5',     icon:'★',   check:s=>(Number(s.asist)||0)>5},
-    {name:'PUNTUAL',        desc:'Asistencia > 7',     icon:'★★',  check:s=>(Number(s.asist)||0)>7},
-    {name:'PRESENCIA TOTAL',desc:'Asistencia perfecta',icon:'★★★', check:s=>(Number(s.asist)||0)>=10},
+const ACH_GROUPS=[
+  {label:'Asistencia',items:[
+    {name:'PRESENTE',desc:'Asistencia > 5',emoji:'📅',check:s=>(Number(s.asist)||0)>5},
+    {name:'PUNTUAL',desc:'Asistencia > 7',emoji:'✅',check:s=>(Number(s.asist)||0)>7},
+    {name:'PRESENCIA TOTAL',desc:'Asistencia perfecta',emoji:'🎯',check:s=>(Number(s.asist)||0)>=10},
   ]},
-  { label:'EPP', items:[
-    {name:'EQUIPADO',  desc:'EPP > 50%',  icon:'◆',   check:s=>(Number(s.epp)||0)>0.5},
-    {name:'PROTEGIDO', desc:'EPP > 80%',  icon:'◆◆',  check:s=>(Number(s.epp)||0)>0.8},
-    {name:'BLINDADO',  desc:'EPP 100%',   icon:'◆◆◆', check:s=>(Number(s.epp)||0)>=1},
+  {label:'EPP',items:[
+    {name:'EQUIPADO',desc:'EPP > 50%',emoji:'🦺',check:s=>(Number(s.epp)||0)>0.5},
+    {name:'PROTEGIDO',desc:'EPP > 80%',emoji:'🛡️',check:s=>(Number(s.epp)||0)>0.8},
+    {name:'BLINDADO',desc:'EPP 100%',emoji:'⚔️',check:s=>(Number(s.epp)||0)>=1},
   ]},
-  { label:'PARTICIPACIÓN', items:[
-    {name:'ACTIVO',        desc:'Participación > 5', icon:'▲',   check:s=>(Number(s.partic)||0)>5},
-    {name:'EN RACHA',      desc:'Participación > 7', icon:'▲▲',  check:s=>(Number(s.partic)||0)>7},
-    {name:'RACHA PERFECTA',desc:'Participación > 9', icon:'▲▲▲', check:s=>(Number(s.partic)||0)>9},
+  {label:'Participación',items:[
+    {name:'ACTIVO',desc:'Participación > 5',emoji:'✋',check:s=>(Number(s.partic)||0)>5},
+    {name:'EN RACHA',desc:'Participación > 7',emoji:'⚡',check:s=>(Number(s.partic)||0)>7},
+    {name:'RACHA PERFECTA',desc:'Participación > 9',emoji:'🔥',check:s=>(Number(s.partic)||0)>9},
   ]},
-  { label:'TRABAJOS TEÓRICOS', items:[
-    {name:'ENTREGANDO', desc:'Al menos 1 TT',  icon:'●',   check:s=>[s.tt1,s.tt2,s.tt3,s.tt4].some(Boolean)},
-    {name:'CONSTANTE',  desc:'Al menos 3 TTs', icon:'●●',  check:s=>[s.tt1,s.tt2,s.tt3,s.tt4].filter(Boolean).length>=3},
-    {name:'ENTREGADOR', desc:'Los 4 TTs',       icon:'●●●', check:s=>[s.tt1,s.tt2,s.tt3,s.tt4].every(Boolean)},
+  {label:'Trabajos Teóricos',items:[
+    {name:'ENTREGANDO',desc:'Al menos 1 TT',emoji:'📝',check:s=>[s.tt1,s.tt2,s.tt3,s.tt4].some(Boolean)},
+    {name:'CONSTANTE',desc:'Al menos 3 TTs',emoji:'📚',check:s=>[s.tt1,s.tt2,s.tt3,s.tt4].filter(Boolean).length>=3},
+    {name:'ENTREGADOR',desc:'Los 4 TTs',emoji:'🏅',check:s=>[s.tt1,s.tt2,s.tt3,s.tt4].every(Boolean)},
   ]},
-  { label:'EXAMEN', items:[
-    {name:'EXAMINADO',    desc:'Examen rendido', icon:'◉',   check:s=>(Number(s.examen)||0)>0},
-    {name:'APROBADO',     desc:'Examen > 6',     icon:'◉◉',  check:s=>(Number(s.examen)||0)>6},
-    {name:'TEÓRICO PURO', desc:'Examen > 8',     icon:'◉◉◉', check:s=>(Number(s.examen)||0)>8},
+  {label:'Examen',items:[
+    {name:'EXAMINADO',desc:'Examen rendido',emoji:'✏️',check:s=>(Number(s.examen)||0)>0},
+    {name:'APROBADO',desc:'Examen > 6',emoji:'📊',check:s=>(Number(s.examen)||0)>6},
+    {name:'TEÓRICO PURO',desc:'Examen > 8',emoji:'🧠',check:s=>(Number(s.examen)||0)>8},
   ]},
-  { label:'TRABAJOS PRÁCTICOS', items:[
-    {name:'ARRANCANDO',     desc:'Al menos 2 TPs', icon:'✦',   check:s=>[s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].filter(Boolean).length>=2},
-    {name:'MANOS A LA OBRA',desc:'Al menos 4 TPs', icon:'✦✦',  check:s=>[s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].filter(Boolean).length>=4},
-    {name:'ARTESANO',       desc:'Los 6 TPs',       icon:'✦✦✦', check:s=>[s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].every(Boolean)},
+  {label:'Trabajos Prácticos',items:[
+    {name:'ARRANCANDO',desc:'Al menos 2 TPs',emoji:'🔧',check:s=>[s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].filter(Boolean).length>=2},
+    {name:'MANOS A LA OBRA',desc:'Al menos 4 TPs',emoji:'🛠️',check:s=>[s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].filter(Boolean).length>=4},
+    {name:'ARTESANO',desc:'Los 6 TPs',emoji:'🏆',check:s=>[s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].every(Boolean)},
   ]},
 ];
 
-// ── DATA ──
-let allData = {LM:[],MJ:[]};
-let currentGroup = 'LM';
+let allData={LM:[],MJ:[]};
+let currentGroup='LM';
 
-async function loadGroup(suffix) {
-  if (allData[suffix].length) return;
-  try {
-    const res = await fetch(`${APPS_SCRIPT_URL}?sheet=${suffix}`);
-    allData[suffix] = await res.json();
-  } catch(e) {
-    el('player-list').innerHTML = '<div class="state-msg">Error al cargar.</div>';
-  }
+async function loadGroup(suffix){
+  if(allData[suffix].length)return;
+  try{const res=await fetch(`${APPS_SCRIPT_URL}?sheet=${suffix}`);allData[suffix]=await res.json();}
+  catch(e){el('player-list').innerHTML='<div class="state-msg">Error al cargar.</div>';}
 }
 
-async function selectGroup(suffix) {
-  currentGroup = suffix;
-  document.querySelectorAll('.group-tab').forEach(t =>
-    t.classList.toggle('active',(suffix==='LM')===t.textContent.includes('LUNES'))
-  );
-  el('player-list').innerHTML = '<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
+async function selectGroup(suffix){
+  currentGroup=suffix;
+  document.querySelectorAll('.group-tab').forEach(t=>t.classList.toggle('active',(suffix==='LM')===t.textContent.includes('Lunes')));
+  el('player-list').innerHTML='<div class="state-msg"><div class="spinner"></div>Cargando...</div>';
   await loadGroup(suffix);
   renderList();
 }
 
-function renderList() {
-  const list = el('player-list');
-  const students = allData[currentGroup];
-  if (!students.length) { list.innerHTML = '<div class="state-msg">Sin datos.</div>'; return; }
-  list.innerHTML = '';
-  students.forEach((s,i) => {
-    const nf = Number(s.nf)||0;
-    const {label,color} = getRank(nf);
-    const btn = document.createElement('button');
-    btn.className = 'player-btn'; btn.dataset.idx = i;
-    btn.innerHTML = `<span>${s.nombre.split(',')[0]}</span><span class="player-rank" style="color:${color}">${label}</span>`;
-    btn.onclick = () => showPlayer(i);
-    list.appendChild(btn);
+function renderList(){
+  const list=el('player-list');
+  const students=allData[currentGroup];
+  if(!students.length){list.innerHTML='<div class="state-msg">Sin datos.</div>';return;}
+  list.innerHTML='';
+  students.forEach((s,i)=>{
+    const nf=Number(s.nf)||0;
+    const {label,color,grad}=getRank(nf);
+    const item=document.createElement('div');
+    item.className='player-item'; item.dataset.idx=i;
+    item.innerHTML=`
+      <div class="player-avatar" style="background:${grad}">${getAvatar(i)}</div>
+      <div class="player-info">
+        <div class="player-name-short">${s.nombre.split(',')[0]}</div>
+        <div class="player-rank-label" style="color:${color}">${label}</div>
+      </div>
+      <div class="player-score" style="color:${gradeColor(nf)}">${fmt(nf)}</div>`;
+    item.onclick=()=>showPlayer(i);
+    list.appendChild(item);
   });
 }
 
-function showPlayer(idx) {
-  document.querySelectorAll('.player-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
-  const s = allData[currentGroup][idx];
-  const nf     = Number(s.nf)||0;
-  const n1     = Number(s.n1)||0;
-  const n2     = Number(s.n2)||0;
-  const n3     = Number(s.n3)||0;
-  const asist  = Number(s.asist)||0;
-  const eppPct = Number(s.epp)||0;
-  const partic = Number(s.partic)||0;
-  const examen = Number(s.examen)||0;
+function showPlayer(idx){
+  document.querySelectorAll('.player-item').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  const s=allData[currentGroup][idx];
+  const nf=Number(s.nf)||0,n1=Number(s.n1)||0,n2=Number(s.n2)||0,n3=Number(s.n3)||0;
+  const asist=Number(s.asist)||0,eppPct=Number(s.epp)||0,partic=Number(s.partic)||0,examen=Number(s.examen)||0;
 
-  // TTs
-  const ttKeys   = ['tt1','tt2','tt3','tt4'];
-  const ttTexts  = ttKeys.map(k=>s[k]?String(s[k]):null);
-  const ttNums   = ttTexts.map(t=>t?ttTextToNum(t,n1):0);
-  const ttProm   = sum(ttNums)/4;
+  const ttTexts=['tt1','tt2','tt3','tt4'].map(k=>s[k]?String(s[k]):null);
+  const ttNums=ttTexts.map(t=>t?ttTextToNum(t,n1):0);
+  const ttProm=sum(ttNums)/4;
 
-  // TPs
-  const tpKeys   = ['tp1','tp2','tp3','tp4','tp5','tp6'];
-  const tpTexts  = tpKeys.map(k=>s[k]?String(s[k]):null);
-  const tpNums   = tpTexts.map(t=>t?tpTextToNum(t,n1):0);
-  const tpProm   = sum(tpNums)/6;
+  const tpTexts=['tp1','tp2','tp3','tp4','tp5','tp6'].map(k=>s[k]?String(s[k]):null);
+  const tpNums=tpTexts.map(t=>t?tpTextToNum(t,n1):0);
+  const tpProm=sum(tpNums)/6;
 
-  // Aportes N1
-  const aAsist  = asist*0.2;
-  const aEpp    = eppPct*10*0.2;
-  const aPartic = partic*0.6;
-  const aTT     = ttProm*0.3;
-  const aExam   = examen*0.7;
+  const aAsist=asist*0.2,aEpp=eppPct*10*0.2,aPartic=partic*0.6;
+  const aTT=ttProm*0.3,aExam=examen*0.7;
 
-  // Rank & level
-  const {label:rankLabel,color:rankColor} = getRank(nf);
-  const {level,cur,pct} = xpLevel(nf);
+  const {label,color,grad}=getRank(nf);
+  const {level,cur,pct}=xpLevel(nf);
 
-  // ── Player card ──
-  el('g-name').textContent = s.nombre;
-  el('g-rank').textContent = rankLabel;
-  el('g-rank').style.color = rankColor;
-  el('g-level').textContent = level;
-  el('g-next').textContent = level<10?level+1:'MAX';
-  el('g-xpbar').style.width = `${pct}%`;
-  el('g-xp-cur').textContent = cur;
-  el('g-xp-max').textContent = 100;
+  // Hero
+  el('p-name').textContent=s.nombre;
+  el('p-rank-chip').textContent=label;
+  el('p-rank-chip').style.background=grad;
+  el('p-rank-chip').style.color='#fff';
+  el('p-level').textContent=level;
+  el('p-next').textContent=level<10?level+1:'MAX';
+  el('p-xpbar').style.width=`${pct}%`;
+  el('p-xp-cur').textContent=cur;
+  el('p-mot-main').textContent=getMotivation(nf);
+  el('p-mot-tip').textContent='▸ '+getWeakTip({asist,epp:eppPct*10,partic,tt:ttProm,exam:examen,tp:tpProm});
 
-  // XP segments
-  const segsEl = el('g-xp-segs');
-  segsEl.innerHTML = '';
-  for (let i=0;i<10;i++) { const d=document.createElement('div'); d.className='xp-seg'; segsEl.appendChild(d); }
-
-  el('g-motivation-main').textContent = getMotivation(nf);
-  el('g-motivation-tip').textContent = '▸ ' + getWeakTip({asist,epp:eppPct*10,partic,tt:ttProm,exam:examen,tp:tpProm});
-
-  // Final
-  el('g-final').textContent = fmt(nf);
-  el('g-final').style.color = gradeColor(nf);
-  el('g-final-sub').textContent = `${rankLabel} · Nivel ${level}`;
+  // Score
+  el('p-final').textContent=fmt(nf);
+  el('p-final').style.color=gradeColor(nf);
+  el('p-final-sub').textContent=`${label} · Nivel ${level}`;
 
   // N1
-  el('g-n1').textContent = fmt(n1); el('g-n1').style.color = gradeColor(n1);
-  el('g-asist').textContent = `${Math.round(asist*10)}%`;
-  el('g-asist').style.color = gradeColor(asist);
-  el('bar-asist').style.width=`${asist*10}%`; el('bar-asist').style.background=gradeColor(asist);
-  el('ap-asist').textContent = `(+${aAsist.toFixed(2)})`;
+  el('p-n1').textContent=fmt(n1); el('p-n1').style.color=gradeColor(n1);
+  el('p-asist').textContent=`${Math.round(asist*10)}%`; el('p-asist').style.color=gradeColor(asist);
+  el('bar-asist').style.cssText=`width:${asist*10}%;background:${gradeColor(asist)}`;
+  el('ap-asist').textContent=`(+${aAsist.toFixed(2)})`;
+  el('p-epp').textContent=`${Math.round(eppPct*100)}%`; el('p-epp').style.color=gradeColor(eppPct*10);
+  el('bar-epp').style.cssText=`width:${eppPct*100}%;background:${gradeColor(eppPct*10)}`;
+  el('ap-epp').textContent=`(+${aEpp.toFixed(2)})`;
+  el('p-partic').textContent=fmt(partic); el('p-partic').style.color=gradeColor(partic);
+  el('bar-partic').style.cssText=`width:${partic*10}%;background:${gradeColor(partic)}`;
+  el('ap-partic').textContent=`(+${aPartic.toFixed(2)})`;
 
-  el('g-epp').textContent = `${Math.round(eppPct*100)}%`;
-  el('g-epp').style.color = gradeColor(eppPct*10);
-  el('bar-epp').style.width=`${eppPct*100}%`; el('bar-epp').style.background=gradeColor(eppPct*10);
-  el('ap-epp').textContent = `(+${aEpp.toFixed(2)})`;
+  // N2
+  el('p-n2').textContent=fmt(n2); el('p-n2').style.color=gradeColor(n2);
+  el('p-tt').textContent=fmt(ttProm); el('p-tt').style.color=gradeColor(ttProm);
+  el('bar-tt').style.cssText=`width:${ttProm*10}%;background:${gradeColor(ttProm)}`;
+  el('ap-tt').textContent=`(+${aTT.toFixed(2)})`;
 
-  el('g-partic').textContent = fmt(partic);
-  el('g-partic').style.color = gradeColor(partic);
-  el('bar-partic').style.width=`${partic*10}%`; el('bar-partic').style.background=gradeColor(partic);
-  el('ap-partic').textContent = `(+${aPartic.toFixed(2)})`;
-
-  // N2 - TTs
-  el('g-n2').textContent = fmt(n2); el('g-n2').style.color = gradeColor(n2);
-  el('g-tt').textContent = fmt(ttProm); el('g-tt').style.color = gradeColor(ttProm);
-  el('bar-tt').style.width=`${ttProm*10}%`; el('bar-tt').style.background=gradeColor(ttProm);
-  el('ap-tt').textContent = `(+${aTT.toFixed(2)})`;
-
-  const ttBtns = el('tt-btns'); ttBtns.innerHTML='';
-  const ttDets = el('tt-details'); ttDets.innerHTML='';
+  const ttBtns=el('tt-btns'); ttBtns.innerHTML='';
+  const ttDets=el('tt-details'); ttDets.innerHTML='';
   ttTexts.forEach((txt,i)=>{
-    const btn = document.createElement('div');
-    btn.className = `item-btn${txt?' done':''}`;
-    btn.textContent = i+1;
-    ttBtns.appendChild(btn);
-    if (txt) {
-      const det = document.createElement('div');
-      det.className = 'item-detail visible';
-      det.innerHTML = `
-        <div class="item-detail-header">
-          <span class="item-detail-name">TT ${i+1} — ${TT_LABELS[txt]||txt}</span>
-          <span class="item-detail-val" style="color:${gradeColor(ttNums[i])}">${txt} · ${fmt(ttNums[i])}</span>
-        </div>
-        <div class="item-detail-bar-track"><div class="item-detail-bar-fill" style="background:${gradeColor(ttNums[i])};width:${ttNums[i]*10}%"></div></div>`;
-      ttDets.appendChild(det);
+    const b=document.createElement('div');
+    b.className=`item-btn${txt?' done':''}`;
+    b.textContent=i+1; ttBtns.appendChild(b);
+    if(txt){
+      const d=document.createElement('div'); d.className='item-detail';
+      d.innerHTML=`<div class="item-detail-row"><span class="item-detail-name">TT ${i+1} — ${TT_LABELS[txt]||txt}</span><span><span class="item-detail-val" style="color:${gradeColor(ttNums[i])}">${txt} · ${fmt(ttNums[i])}</span></span></div><div class="mini-bar"><div class="mini-bar-fill" style="background:${gradeColor(ttNums[i])};width:${ttNums[i]*10}%"></div></div>`;
+      ttDets.appendChild(d);
     }
   });
 
-  el('g-exam').textContent = fmt(examen); el('g-exam').style.color = gradeColor(examen);
-  el('bar-exam').style.width=`${examen*10}%`; el('bar-exam').style.background=gradeColor(examen);
-  el('ap-exam').textContent = `(+${aExam.toFixed(2)})`;
+  el('p-exam').textContent=fmt(examen); el('p-exam').style.color=gradeColor(examen);
+  el('bar-exam').style.cssText=`width:${examen*10}%;background:${gradeColor(examen)}`;
+  el('ap-exam').textContent=`(+${aExam.toFixed(2)})`;
 
-  // N3 - TPs
-  el('g-n3').textContent = fmt(n3); el('g-n3').style.color = gradeColor(n3);
-
-  const tpBtns = el('tp-btns'); tpBtns.innerHTML='';
-  const tpDets = el('tp-details'); tpDets.innerHTML='';
+  // N3
+  el('p-n3').textContent=fmt(n3); el('p-n3').style.color=gradeColor(n3);
+  const tpBtns=el('tp-btns'); tpBtns.innerHTML='';
+  const tpDets=el('tp-details'); tpDets.innerHTML='';
   tpTexts.forEach((txt,i)=>{
-    const btn = document.createElement('div');
-    btn.className = `item-btn${txt?' done':''}`;
-    btn.textContent = i+1;
-    tpBtns.appendChild(btn);
-    if (txt) {
-      const det = document.createElement('div');
-      det.className = 'item-detail visible';
-      det.innerHTML = `
-        <div class="item-detail-header">
-          <span class="item-detail-name">TP ${i+1}</span>
-          <span class="item-detail-val" style="color:${gradeColor(tpNums[i])}">${txt} · ${fmt(tpNums[i])} <span style="opacity:0.6;font-size:9px">(+${(tpNums[i]/6).toFixed(2)})</span></span>
-        </div>
-        <div class="item-detail-bar-track"><div class="item-detail-bar-fill" style="background:${gradeColor(tpNums[i])};width:${tpNums[i]*10}%"></div></div>`;
-      tpDets.appendChild(det);
+    const b=document.createElement('div');
+    b.className=`item-btn${txt?' done':''}`;
+    b.textContent=i+1; tpBtns.appendChild(b);
+    if(txt){
+      const d=document.createElement('div'); d.className='item-detail';
+      d.innerHTML=`<div class="item-detail-row"><span class="item-detail-name">TP ${i+1}</span><span><span class="item-detail-val" style="color:${gradeColor(tpNums[i])}">${txt} · ${fmt(tpNums[i])}</span><span class="item-detail-aporte">(+${(tpNums[i]/6).toFixed(2)})</span></span></div><div class="mini-bar"><div class="mini-bar-fill" style="background:${gradeColor(tpNums[i])};width:${tpNums[i]*10}%"></div></div>`;
+      tpDets.appendChild(d);
     }
   });
 
   // Logros
-  const achContainer = el('achievements');
-  achContainer.innerHTML = '';
-  let totalUnlocked = 0;
+  const achContainer=el('achievements'); achContainer.innerHTML='';
+  let total=0;
   ACH_GROUPS.forEach(group=>{
-    const glabel = document.createElement('div');
-    glabel.className = 'ach-group-label';
-    glabel.textContent = '▸ '+group.label;
-    achContainer.appendChild(glabel);
-    const grid = document.createElement('div');
-    grid.className = 'achievements-grid';
+    const gl=document.createElement('div'); gl.className='ach-section-label'; gl.textContent=group.label;
+    achContainer.appendChild(gl);
+    const grid=document.createElement('div'); grid.className='ach-grid';
     group.items.forEach(a=>{
-      const unlocked = a.check(s);
-      if (unlocked) totalUnlocked++;
-      const div = document.createElement('div');
-      div.className = `achievement ${unlocked?'unlocked':'locked'}`;
-      div.innerHTML = `<span class="ach-icon">${a.icon}</span><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div>`;
+      const unlocked=a.check(s); if(unlocked)total++;
+      const div=document.createElement('div'); div.className=`ach-card ${unlocked?'unlocked':'locked'}`;
+      div.innerHTML=`<span class="ach-emoji">${a.emoji}</span><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div>`;
       grid.appendChild(div);
     });
     achContainer.appendChild(grid);
   });
-  el('g-ach-count').textContent = `${totalUnlocked}/18`;
+  el('p-ach-count').textContent=`${total}/18 logros`;
 
-  el('game-screen').classList.add('visible');
-  el('game-screen').scrollIntoView({behavior:'smooth',block:'start'});
+  el('profile').classList.add('visible');
+  el('profile').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 loadGroup('LM').then(renderList);
