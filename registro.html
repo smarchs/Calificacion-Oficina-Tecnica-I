@@ -40,7 +40,7 @@
     header h1 { font-size: 26px; }
     .layout { display: grid; grid-template-columns: 1fr 340px; gap: 12px; align-items: start; }
     .col-notes { display: flex; flex-direction: column; gap: 12px; }
-    .card-final-sticky { grid-column: 2; grid-row: 1; position: sticky; top: 20px; }
+    .card-final-sticky { grid-column: 2; grid-row: 1 / 4; position: sticky; top: 20px; }
     .card-title { font-size: 14px; }
     .card-value { font-size: 34px; }
     .nota-bar-name { font-size: 12px; }
@@ -304,13 +304,6 @@
 
 </div><!-- /perfil-wrap -->
 
-<!-- TIP -->
-<div class="card" id="tip-card" style="background:var(--surface);display:none;margin-top:0px;max-width:540px;margin-left:auto;margin-right:auto;">
-  <div class="card-left" style="border-right:none;padding:16px 18px;">
-    <div class="card-title" style="margin-bottom:10px">Tu progreso</div>
-    <p id="tip-text" style="font-size:12px;color:var(--muted);line-height:1.8;"></p>
-  </div>
-</div>
 
 
 
@@ -552,54 +545,69 @@ function showProfile(idx) {
   makeDonut('chartFinal',[aN1,aN2,aN3,Math.max(0,10-aN1-aN2-aN3)],[p.n1,p.n2,p.n3,ec],'65%');
 
   // ── TIP ──
-  const tipParts = [];
+  const exVal = Number(s.examen) || 0;
+  const ttEnt = s.ttTexts.filter(t=>t&&t!=='N').length;
+  const ttATiempo = s.ttTexts.filter(t=>t==='T').length;
+  const tpEnt = ['tp1','tp2','tp3','tp4','tp5','tp6'].filter(k=>s[k]&&s[k]!=='N').length;
+  const eppPct100 = Math.round((s.eppPct||0)*100);
 
-  // Lo que va bien
-  const fortalezas = [];
-  if (asistVal >= 8) fortalezas.push('tu asistencia es muy buena');
-  if (s.eppPct >= 0.8) fortalezas.push('cumplís bien con el EPP');
-  if (particVal >= 7) fortalezas.push('tu participación en clase es destacada');
-  if (ttProm >= 7) fortalezas.push('las entregas teóricas están en buen nivel');
-  const exVal = s.examen || 0;
-  if (exVal >= 7) fortalezas.push('el examen te fue bien');
-  if (n3 >= 7) fortalezas.push('los trabajos prácticos muestran buen desempeño');
-
-  // Lo que falta mejorar
-  const debilidades = [];
-  if (asistVal < 6) debilidades.push('la asistencia (que pesa 20% en Compromiso)');
-  if (s.eppPct < 0.5) debilidades.push('el uso de EPP (20% en Compromiso)');
-  if (particVal < 5) debilidades.push('la participación en clase (60% en Compromiso)');
-  const ttEntregados = s.ttTexts.filter(t=>t&&t!=='N').length;
-  if (ttEntregados < 2) debilidades.push(`los trabajos teóricos (solo ${ttEntregados} de 4 entregados)`);
-  if (exVal === 0) debilidades.push('el examen (todavía no rendido, pesa 70% en Teoría)');
-  else if (exVal < 6) debilidades.push('el examen (está por debajo del aprobado)');
-  const tpEntregados = ['tp1','tp2','tp3','tp4','tp5','tp6'].filter(k=>s[k]&&s[k]!=='N').length;
-  if (tpEntregados < 3) debilidades.push(`los trabajos prácticos (solo ${tpEntregados} de 6 entregados)`);
-
-  // Qué hacer
-  const acciones = [];
-  if (asistVal < 6) acciones.push('priorizá venir a clase');
-  if (s.eppPct < 0.5) acciones.push('traé el equipo completo cada clase');
-  if (particVal < 5) acciones.push('involucrarte más durante la clase va a subir directo tu Nota 1');
-  if (ttEntregados < 4) acciones.push(`podés entregar los ${4-ttEntregados} TT que faltan`);
-  if (exVal < 6 || exVal === 0) acciones.push('concentrarte en el examen es clave, define el 70% de Teoría');
-  if (tpEntregados < 6) acciones.push(`entregar los ${6-tpEntregados} TP pendientes va a mejorar directo tu Nota 3`);
-
-  let tip = '';
-  if (fortalezas.length > 0) {
-    tip += `Lo que está funcionando: ${fortalezas.join(', ')}. `;
+  // Frases por variable: [nivel, frase]
+  // N/I/R → subir | B/MB/E → bien
+  function asistFrase() {
+    if (asistVal === 0)    return ['subir', 'Sin registro de asistencia.'];
+    if (asistVal <= 4)     return ['subir', 'Asistencia muy baja. Cada clase que faltás afecta tu nota directamente.'];
+    if (asistVal <= 6)     return ['subir', 'Asistencia regular. Venir más seguido mejora tu Nota 1.'];
+    if (asistVal <= 8)     return ['bien',  'Buena asistencia. Seguí manteniéndola.'];
+    if (asistVal < 10)     return ['bien',  'Muy buena asistencia. Casi no faltás.'];
+    return                        ['bien',  'Asistencia perfecta en todo el bimestre.'];
   }
-  if (debilidades.length > 0) {
-    tip += `Lo que más está afectando tu nota es ${debilidades.join(' y ')}. `;
+  function eppFrase() {
+    if (eppPct100 === 0)   return ['subir', 'Sin registro de EPP.'];
+    if (eppPct100 <= 30)   return ['subir', 'EPP casi sin registrar. Traer el equipo completo suma directo a Compromiso.'];
+    if (eppPct100 <= 60)   return ['subir', 'EPP irregular. Traerlo siempre es un punto fácil de no perder.'];
+    if (eppPct100 <= 80)   return ['bien',  'Buen cumplimiento del EPP.'];
+    if (eppPct100 < 100)   return ['bien',  'Muy buen uso del EPP, casi siempre completo.'];
+    return                        ['bien',  'EPP perfecto en todo el bimestre.'];
   }
-  if (acciones.length > 0) {
-    tip += `Para subir: ${acciones.join(', ')}.`;
+  function particFrase() {
+    if (particVal === 0)   return ['subir', 'Sin registro de participación.'];
+    if (particVal <= 3)    return ['subir', 'Participación muy baja. Es el componente que más pesa en Compromiso.'];
+    if (particVal <= 5)    return ['subir', 'Participación regular. Involucrarte más en clase cambia bastante la nota.'];
+    if (particVal <= 7)    return ['bien',  'Buena participación en clase.'];
+    if (particVal <= 9)    return ['bien',  'Muy buena participación. Se nota el involucramiento.'];
+    return                        ['bien',  'Participación excelente en todo el bimestre.'];
   }
-  if (!tip) {
-    tip = 'Seguí así, todos los componentes están en buen nivel.';
+  function ttFrase() {
+    if (ttEnt === 0)       return ['subir', 'Ningún trabajo teórico entregado.'];
+    if (ttEnt === 1)       return ['subir', 'Solo 1 TT entregado. Cada entrega sube el promedio de Teoría.'];
+    if (ttEnt === 2)       return ['subir', '2 TTs entregados. Quedan 2 para completar.'];
+    if (ttEnt === 3)       return ['bien',  '3 TTs entregados. Falta 1 para tenerlos todos.'];
+    if (ttATiempo < 4)     return ['bien',  'Los 4 TTs entregados, con algún retraso.'];
+    return                        ['bien',  'Los 4 TTs entregados a tiempo.'];
+  }
+  function examFrase() {
+    if (exVal === 0)       return ['subir', 'El examen no fue rendido. Pesa 70% en Teoría.'];
+    if (exVal <= 3)        return ['subir', 'Examen muy por debajo del aprobado.'];
+    if (exVal < 6)         return ['subir', 'Examen cerca del aprobado pero todavía no llega.'];
+    if (exVal < 8)         return ['bien',  'Examen aprobado.'];
+    if (exVal < 9)         return ['bien',  'Muy buen examen, arriba de 8.'];
+    return                        ['bien',  'Examen excelente, arriba de 9.'];
+  }
+  function tpFrase() {
+    if (tpEnt === 0)       return ['subir', 'Ningún trabajo práctico entregado.'];
+    if (tpEnt === 1)       return ['subir', 'Solo 1 TP entregado. Cada práctica suma directo a Nota 3.'];
+    if (tpEnt <= 3)        return ['subir', '2 o 3 TPs entregados. Hay margen para mejorar.'];
+    if (tpEnt === 4)       return ['bien',  '4 TPs entregados.'];
+    if (tpEnt === 5)       return ['bien',  '5 TPs entregados. Falta 1 para completar.'];
+    return                        ['bien',  'Los 6 TPs entregados.'];
   }
 
-  el('tip-text').textContent = tip;
+  const frases = [asistFrase(), eppFrase(), particFrase(), ttFrase(), examFrase(), tpFrase()];
+  const bien  = frases.filter(f=>f[0]==='bien').map(f=>f[1]);
+  const subir = frases.filter(f=>f[0]==='subir').map(f=>f[1]);
+
+  el('tip-bien').innerHTML  = bien.length  ? bien.map(f=>`<li>${f}</li>`).join('') : '<li>—</li>';
+  el('tip-subir').innerHTML = subir.length ? subir.map(f=>`<li>${f}</li>`).join('') : '<li>Todo en orden por ahora.</li>';
   el('tip-card').style.display = 'block';
 
   el('perfil-wrap').scrollIntoView({behavior:'smooth',block:'start'});
