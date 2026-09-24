@@ -302,14 +302,6 @@
 
 </div><!-- /layout -->
 
-<!-- TIP -->
-<div class="card" id="tip-card" style="background:var(--surface);margin-top:4px;">
-  <div class="card-left" style="border-right:none;padding:16px 18px;">
-    <div class="card-title" style="margin-bottom:10px">Análisis de tu progreso</div>
-    <p id="tip-text" style="font-size:12px;color:var(--muted);line-height:1.7;"></p>
-  </div>
-</div>
-
 </div><!-- /perfil-wrap -->
 
 
@@ -567,7 +559,7 @@ function showProfile(idx) {
   if (asistVal < 6) debilidades.push('la asistencia (que pesa 20% en Compromiso)');
   if (s.eppPct < 0.5) debilidades.push('el uso de EPP (20% en Compromiso)');
   if (particVal < 5) debilidades.push('la participación en clase (60% en Compromiso)');
-  const ttEntregados = [s.ttTexts[0],s.ttTexts[1],s.ttTexts[2],s.ttTexts[3]].filter(t=>t&&t!=='N').length;
+  const ttEntregados = ttTexts.filter(t=>t&&t!=='N').length;
   if (ttEntregados < 2) debilidades.push(`los trabajos teóricos (solo ${ttEntregados} de 4 entregados)`);
   if (exVal === 0) debilidades.push('el examen (todavía no rendido, pesa 70% en Teoría)');
   else if (exVal < 6) debilidades.push('el examen (está por debajo del aprobado)');
@@ -598,6 +590,7 @@ function showProfile(idx) {
   }
 
   el('tip-text').textContent = tip;
+  el('tip-card').style.display = 'block';
 
   el('perfil-wrap').scrollIntoView({behavior:'smooth',block:'start'});
 }
