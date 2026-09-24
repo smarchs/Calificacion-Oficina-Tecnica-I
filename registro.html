@@ -564,7 +564,7 @@ function showProfile(idx) {
   const exVal = Number(s.examen) || 0;
   const ttEnt = s.ttTexts.filter(t=>t&&t!=='N').length;
   const ttATiempo = s.ttTexts.filter(t=>t==='T').length;
-  const tpEnt = ['tp1','tp2','tp3','tp4','tp5','tp6'].filter(k=>s[k]&&s[k]!=='N').length;
+  const tpEnt = s.tpTexts.filter(t=>t&&t!=='N').length;
   const eppPct100 = Math.round((s.eppPct||0)*100);
 
   // Frases por variable: [nivel, frase]
