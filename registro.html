@@ -569,7 +569,7 @@ function showProfile(idx) {
   if (asistVal < 6) debilidades.push('la asistencia (que pesa 20% en Compromiso)');
   if (s.eppPct < 0.5) debilidades.push('el uso de EPP (20% en Compromiso)');
   if (particVal < 5) debilidades.push('la participación en clase (60% en Compromiso)');
-  const ttEntregados = ttTexts.filter(t=>t&&t!=='N').length;
+  const ttEntregados = s.ttTexts.filter(t=>t&&t!=='N').length;
   if (ttEntregados < 2) debilidades.push(`los trabajos teóricos (solo ${ttEntregados} de 4 entregados)`);
   if (exVal === 0) debilidades.push('el examen (todavía no rendido, pesa 70% en Teoría)');
   else if (exVal < 6) debilidades.push('el examen (está por debajo del aprobado)');
