@@ -560,6 +560,7 @@ function showProfile(idx) {
   if (s.eppPct >= 0.8) fortalezas.push('cumplís bien con el EPP');
   if (particVal >= 7) fortalezas.push('tu participación en clase es destacada');
   if (ttProm >= 7) fortalezas.push('las entregas teóricas están en buen nivel');
+  const exVal = s.examen || 0;
   if (exVal >= 7) fortalezas.push('el examen te fue bien');
   if (n3 >= 7) fortalezas.push('los trabajos prácticos muestran buen desempeño');
 
