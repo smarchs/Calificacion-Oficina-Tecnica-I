@@ -113,7 +113,6 @@
   }
   .tp-desempeno-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; font-weight: 700; }
 
-  /* ── SELECTOR (bloque extra) ── */
   .selector-card {
     background: var(--card); border-radius: 14px; border: 1px solid var(--border);
     margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
@@ -143,7 +142,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .perfil-wrap { display: none; }
-  .nav-btn-wrap { text-align: center; padding: 32px 0 8px; }
+  .nav-btn-wrap { text-align: center; padding: 24px 0 8px; display: flex; justify-content: center; gap: 10px; }
   .nav-btn {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 10px 22px; border-radius: 10px;
@@ -153,6 +152,7 @@
     text-decoration: none;
   }
   .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -164,30 +164,24 @@
   <p class="sub">Seleccioná tu grupo y nombre para ver tu progreso en la asignatura.</p>
 </header>
 
-<!-- SELECTOR -->
 <div class="selector-card">
   <div class="selector-columns">
     <div class="selector-col" id="col-LM">
-      <div class="selector-col-header">
-        <span>Lunes y Miércoles</span>
-
-      </div>
+      <div class="selector-col-header"><span>Lunes y Miércoles</span></div>
       <div class="selector-col-body open" id="body-LM">
         <div class="state-msg"><div class="spinner"></div>Cargando...</div>
       </div>
     </div>
     <div class="selector-divider"></div>
     <div class="selector-col" id="col-MJ">
-      <div class="selector-col-header">
-        <span>Martes y Jueves</span>
-
+      <div class="selector-col-header"><span>Martes y Jueves</span></div>
+      <div class="selector-col-body open" id="body-MJ">
+        <div class="state-msg"><div class="spinner"></div>Cargando...</div>
       </div>
-      <div class="selector-col-body open" id="body-MJ"><div class="state-msg"><div class="spinner"></div>Cargando...</div></div>
     </div>
   </div>
 </div>
 
-<!-- PERFIL (idéntico al simulador) -->
 <div class="perfil-wrap" id="perfil-wrap">
 <div class="layout">
 <div class="col-notes">
@@ -198,21 +192,21 @@
     <div class="card-title">Nota 1: Compromiso</div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">Asistencia <span>25%</span></span>
+        <span class="nota-bar-name">Asistencia <span>20%</span></span>
         <span class="nota-bar-val"><span id="disp-asist">0%</span> <span id="aporte-asist" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-asist" style="background:var(--c-asist);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">EPP <span>10%</span></span>
+        <span class="nota-bar-name">EPP <span>20%</span></span>
         <span class="nota-bar-val"><span id="disp-epp">0%</span> <span id="aporte-epp" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-epp" style="background:var(--c-epp);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">Participación <span>65%</span></span>
+        <span class="nota-bar-name">Participación <span>60%</span></span>
         <span class="nota-bar-val"><span id="disp-partic">0.0</span> <span id="aporte-partic" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-partic" style="background:var(--c-partic);width:0%"></div></div>
@@ -318,16 +312,18 @@
 
 </div><!-- /layout -->
 
+<div class="nav-btn-wrap">
+  <a class="nav-btn primary" id="btn-simular-alumno" href="simulador.html">Simular mi nota a futuro →</a>
+</div>
 </div><!-- /perfil-wrap -->
 
-
-
+<div class="nav-btn-wrap" id="nav-btn-general">
+  <a class="nav-btn" href="simulador.html">Ir al Simulador en blanco →</a>
+</div>
 
 <script>
-// ── CONFIG ──
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuzGNUOgKfgcKdP2whd5dki4GjLpKARgEdNwWg_QQQkSxEyhk9n3nqKetVo27UouCK/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzBPfrtdBMJZqxDlttuoTKXnSTmZQQjZVWgAfHy0FaVok2ammJv33aquJs9-Ggr5I/exec';
 
-// ── UTILS (idénticos al simulador) ──
 const fmt = n => Math.abs(n-10)<1e-6 ? '10' : Number(n).toFixed(1);
 const dark = () => window.matchMedia('(prefers-color-scheme:dark)').matches;
 const emptyColor = () => dark() ? '#282d3f' : '#e2e8f0';
@@ -341,7 +337,6 @@ const PALETTES = {
 };
 const pal = () => PALETTES[dark()?'dark':'light'];
 
-// Conversión texto → número (misma lógica que simulador)
 function ttTextToNum(txt, n1) {
   if (txt==='T')  return 10;
   if (txt==='T1') return n1>=9?9:8;
@@ -359,7 +354,6 @@ function tpTextToNum(txt, n1) {
   return 0;
 }
 
-// ── CHARTS ──
 let charts = {};
 function makeDonut(id, data, colors, cutout='70%') {
   if (charts[id]) { charts[id].destroy(); delete charts[id]; }
@@ -370,7 +364,6 @@ function makeDonut(id, data, colors, cutout='70%') {
   });
 }
 
-// Construir grids TT y TP (solo display, sin interacción)
 const ttGrid = el('tt-grid'), ttBlocks = el('tt-blocks');
 for (let i=0; i<4; i++) {
   const b = document.createElement('button');
@@ -401,7 +394,6 @@ for (let i=0; i<6; i++) {
   tpBarsContainer.appendChild(row);
 }
 
-// ── DATA ──
 let allData = {LM:[], MJ:[]};
 let currentGroup = 'LM';
 
@@ -411,7 +403,6 @@ async function fetchSheet(suffix) {
 }
 
 function parseStudents(rows) {
-  // rows ya viene como array de objetos del Apps Script
   return rows.map(s => {
     const n1 = Number(s.n1) || 0;
     const eppRaw = s.epp;
@@ -420,14 +411,13 @@ function parseStudents(rows) {
       const num = parseFloat(String(eppRaw).replace('%',''));
       if (!isNaN(num)) eppPct = num > 1 ? num/100 : num;
     }
-    const eppVal = eppPct * 10;
-    const asist  = Number(s.asist) || 0;
+    const asist = Number(s.asist) || 0;
     const particVal = Number(s.partic) || 0;
 
     const ttTexts = [s.tt1, s.tt2, s.tt3, s.tt4].map(v => v ? String(v).trim() : null);
     const ttNums  = ttTexts.map(t => t ? ttTextToNum(t, n1) : 0);
 
-    const tpTexts = [s.tp1,s.tp2,s.tp3,s.tp4,s.tp5,s.tp6].map(v => v ? String(v).trim() : null);
+    const tpTexts = [s.tp1, s.tp2, s.tp3, s.tp4, s.tp5, s.tp6].map(v => v ? String(v).trim() : null);
     const tpNums  = tpTexts.map(t => t ? tpTextToNum(t, n1) : 0);
 
     return {
@@ -448,7 +438,6 @@ function parseStudents(rows) {
   });
 }
 
-// ── UI SELECTOR ──
 async function loadGroup(suffix) {
   const body = el(`body-${suffix}`);
   if (!allData[suffix].length) {
@@ -479,7 +468,6 @@ function renderList(suffix) {
   });
 }
 
-// ── MOSTRAR PERFIL (render idéntico al simulador) ──
 function showProfile(idx) {
   document.querySelectorAll('.student-btn').forEach(b => b.classList.toggle('active', b.dataset.suffix===currentGroup && +b.dataset.idx===idx));
   el('perfil-wrap').style.display = 'block';
@@ -492,11 +480,12 @@ function showProfile(idx) {
   const asistVal  = s.asist;
   const eppVal    = s.eppPct * 10;
   const particVal = s.particVal;
-  const aAsist    = asistVal  * 0.2;
-  const aEpp      = eppVal    * 0.1;
-  const aPartic   = particVal * 0.6;
+  
+  const aAsist    = asistVal  * 0.20;
+  const aEpp      = eppVal    * 0.20;
+  const aPartic   = particVal * 0.60;
 
-  // ── N1 ── (mismo formato que simulador)
+  // ── N1 ──
   el('val-n1').textContent = fmt(n1);
   el('val-n1').style.color = gradeColor(n1);
   el('disp-asist').textContent    = `${Math.round(asistVal*10)}%`;
@@ -513,8 +502,8 @@ function showProfile(idx) {
   // ── N2 ──
   const ttNums = s.ttNums;
   const ttProm = sum(ttNums) / 4;
-  const aTT    = ttProm     * 0.3;
-  const aEx    = s.examen   * 0.7;
+  const aTT    = ttProm     * 0.30;
+  const aEx    = s.examen   * 0.70;
   el('val-n2').textContent    = fmt(n2);
   el('val-n2').style.color    = gradeColor(n2);
   el('seg-tt').textContent    = fmt(ttProm);
@@ -523,7 +512,6 @@ function showProfile(idx) {
   el('disp-examen').textContent   = fmt(s.examen);
   el('fill-examen').style.width   = `${s.examen*10}%`;
   el('aporte-examen').textContent = `(+${aEx.toFixed(2)})`;
-  // TT buttons y bloques
   for (let i=0; i<4; i++) {
     const entregado = s.ttTexts[i] !== null;
     el(`ttb-${i}`).classList.toggle('active', entregado);
@@ -542,7 +530,7 @@ function showProfile(idx) {
     const entregado = s.tpTexts[i] !== null;
     el(`tpb-${i}`).classList.toggle('active', entregado);
     el(`lbl-tp-val-${i}`).textContent = fmt(tpNums[i]);
-    el(`lbl-tp-ap-${i}`).textContent  = `(+${(tpNums[i]/8).toFixed(2)})`;
+    el(`lbl-tp-ap-${i}`).textContent  = `(+${(tpNums[i]/6).toFixed(2)})`;
     el(`fill-tp-${i}`).style.width    = `${tpNums[i]*10}%`;
   }
   makeDonut('chartN3',[...tpAportes,Math.max(0,10-sumaTP)],[...tpNums.map((_,i)=>s.tpTexts[i]?p.tp:ec),ec]);
@@ -560,15 +548,24 @@ function showProfile(idx) {
   const aN1=n1/3, aN2=n2/3, aN3=n3/3;
   makeDonut('chartFinal',[aN1,aN2,aN3,Math.max(0,10-aN1-aN2-aN3)],[p.n1,p.n2,p.n3,ec],'65%');
 
-  // ── TIP ──
+  // Enlace dinámico con precarga hacia simulador.html
+  const params = new URLSearchParams({
+    asist: Math.round(asistVal * 10),
+    epp: Math.round(s.eppPct * 100),
+    partic: particVal >= 9.5 ? 'E' : particVal >= 8.5 ? 'MB' : particVal >= 6.5 ? 'B' : particVal >= 4.5 ? 'R' : particVal > 0 ? 'I' : 'N',
+    ex: s.examen,
+    tt: s.ttTexts.map(t => t || '').join(','),
+    tp: s.tpTexts.map(t => t || '').join(',')
+  });
+  el('btn-simular-alumno').href = `simulador.html?${params.toString()}`;
+
+  // ── TIPS ──
   const exVal = Number(s.examen) || 0;
   const ttEnt = s.ttTexts.filter(t=>t&&t!=='N').length;
   const ttATiempo = s.ttTexts.filter(t=>t==='T').length;
   const tpEnt = s.tpTexts.filter(t=>t&&t!=='N').length;
   const eppPct100 = Math.round((s.eppPct||0)*100);
 
-  // Frases por variable: [nivel, frase]
-  // N/I/R → subir | B/MB/E → bien
   function asistFrase() {
     if (asistVal === 0)    return ['subir', 'Sin registro de asistencia.'];
     if (asistVal <= 4)     return ['subir', 'Asistencia muy baja. Cada clase que faltás afecta tu nota directamente.'];
@@ -637,8 +634,5 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 loadGroup('LM');
 loadGroup('MJ');
 </script>
-  <div class="nav-btn-wrap">
-    <a class="nav-btn" href="simulador.html">Acceder al Simulador →</a>
-  </div>
 </body>
 </html>

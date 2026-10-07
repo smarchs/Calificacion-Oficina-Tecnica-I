@@ -7,104 +7,40 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #f3f4f8;
-    --surface: #ffffff;
-    --card: #fafafc;
-    --text: #0f172a;
-    --muted: #64748b;
-    --border: #e2e8f0;
-    --track-bg: #e2e8f0;
-    --accent: #4f46e5;
-
-    /* Semáforo para notas finales */
-    --green: #047857;
-    --yellow: #b45309;
-    --red: #b91c1c;
-
-    /* Ponderaciones Finales */
-    --col-n1: #4f46e5;
-    --col-n2: #ea580c;
-    --col-n3: #059669;
-
-    /* Componentes Nota 1 */
-    --c-asist: #0284c7;
-    --c-epp: #9333ea;
-    --c-partic: #0d9488;
-
-    /* Componentes Nota 2 */
-    --c-tt: #d97706;
-    --c-examen: #e11d48;
-
-    /* Componentes Nota 3 */
-    --c-tp: #059669;
+    --bg: #f3f4f8; --surface: #ffffff; --card: #fafafc;
+    --text: #0f172a; --muted: #64748b; --border: #e2e8f0;
+    --track-bg: #e2e8f0; --accent: #4f46e5;
+    --green: #047857; --yellow: #b45309; --red: #b91c1c;
+    --col-n1: #4f46e5; --col-n2: #ea580c; --col-n3: #059669;
+    --c-asist: #0284c7; --c-epp: #9333ea; --c-partic: #0d9488;
+    --c-tt: #d97706; --c-examen: #e11d48; --c-tp: #059669;
   }
-
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #090a0f;
-      --surface: #12141c;
-      --card: #181b26;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: #282d3f;
-      --track-bg: #222738;
-      --accent: #818cf8;
-
-      --green: #34d399;
-      --yellow: #fbbf24;
-      --red: #f87171;
-
-      --col-n1: #818cf8;
-      --col-n2: #fb923c;
-      --col-n3: #34d399;
-
-      --c-asist: #38bdf8;
-      --c-epp: #c084fc;
-      --c-partic: #2dd4bf;
-
-      --c-tt: #fde047;
-      --c-examen: #fb7185;
-
-      --c-tp: #34d399;
+      --bg: #090a0f; --surface: #12141c; --card: #181b26;
+      --text: #f8fafc; --muted: #94a3b8; --border: #282d3f;
+      --track-bg: #222738; --accent: #818cf8;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --col-n1: #818cf8; --col-n2: #fb923c; --col-n3: #34d399;
+      --c-asist: #38bdf8; --c-epp: #c084fc; --c-partic: #2dd4bf;
+      --c-tt: #fde047; --c-examen: #fb7185; --c-tp: #34d399;
     }
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--bg); color: var(--text);
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 1.4;
+    font-size: 13px; font-weight: 400; line-height: 1.4;
     padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 24px) 56px;
-    max-width: 540px;
-    margin: 0 auto;
+    max-width: 540px; margin: 0 auto;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
-
-  /* ── DESKTOP LAYOUT ── */
   @media (min-width: 900px) {
-    body {
-      max-width: 100%;
-      padding: 32px 48px 56px;
-    }
+    body { max-width: 100%; padding: 32px 48px 56px; }
     header h1 { font-size: 26px; }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 12px;
-      align-items: start;
-    }
+    .layout { display: grid; grid-template-columns: 1fr 340px; gap: 12px; align-items: start; }
     .col-notes { display: flex; flex-direction: column; gap: 12px; }
-    .card-final-sticky {
-      grid-column: 2;
-      grid-row: 1;
-      position: sticky;
-      top: 20px;
-    }
-
+    .card-final-sticky { grid-column: 2; grid-row: 1; position: sticky; top: 20px; }
     .card-title { font-size: 14px; }
     .card-value { font-size: 34px; }
     .nota-bar-name { font-size: 12px; }
@@ -118,7 +54,6 @@
     .section-label { font-size: 12px; }
     .tp-desempeno-label { font-size: 11px; }
   }
-
   @media (min-width: 1200px) {
     body { padding: 40px 72px 56px; }
     .layout { grid-template-columns: 1fr 380px; gap: 16px; }
@@ -126,71 +61,34 @@
     header h1 { font-size: 28px; }
   }
 
-  /* ── HEADER ── */
   header { margin-bottom: 18px; }
   header .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 2px; }
   header h1 { font-size: clamp(18px, 4vw, 22px); font-weight: 700; color: var(--text); letter-spacing: -0.3px; margin-bottom: 4px; }
   header .sub { font-size: 12px; color: var(--muted); }
 
-  /* ── CARDS ── */
   .card {
-    background: var(--card);
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    margin-bottom: 12px;
-    display: flex;
-    overflow: hidden;
+    background: var(--card); border-radius: 14px; border: 1px solid var(--border);
+    margin-bottom: 12px; display: flex; overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
   }
   .card-left {
-    flex: 1;
-    padding: 14px;
-    border-right: 1px solid var(--border);
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex: 1; padding: 14px; border-right: 1px solid var(--border);
+    min-width: 0; display: flex; flex-direction: column; justify-content: center;
   }
   .card-right {
-    width: 105px;
-    flex-shrink: 0;
-    background: var(--surface);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 6px;
-    gap: 6px;
+    width: 105px; flex-shrink: 0; background: var(--surface);
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 12px 6px; gap: 6px;
   }
   .card-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-  .card-value {
-    font-size: 30px;
-    font-weight: 700;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-  }
+  .card-value { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; text-align: center; }
 
-  /* Contenedor estricto para evitar el bug de escalado en WebKit/iOS */
   .pie-wrapper {
-    width: 64px;
-    height: 64px;
-    min-width: 64px;
-    min-height: 64px;
-    max-width: 64px;
-    max-height: 64px;
-    position: relative;
-    aspect-ratio: 1 / 1;
+    width: 64px; height: 64px; min-width: 64px; min-height: 64px;
+    max-width: 64px; max-height: 64px; position: relative; aspect-ratio: 1 / 1;
   }
-  .pie-wrapper canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100% !important;
-    height: 100% !important;
-  }
+  .pie-wrapper canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
 
-  /* ── NOTA BAR & TRACKS ── */
   .nota-bar-row { margin-bottom: 10px; }
   .nota-bar-row:last-child { margin-bottom: 0; }
   .nota-bar-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
@@ -203,72 +101,38 @@
   .nota-bar-track { height: 5px; border-radius: 3px; background: var(--track-bg); overflow: hidden; }
   .nota-bar-fill { height: 100%; border-radius: 3px; transition: width 0.2s ease; }
 
-  /* ── SLIDERS ── */
   input[type=range] {
-    display: block;
-    width: 100%;
-    height: 16px;
-    opacity: 0;
-    cursor: pointer;
-    position: relative;
-    z-index: 2;
-    margin-top: -5px;
-    margin-bottom: 0;
-    touch-action: pan-y;
+    display: block; width: 100%; height: 16px; opacity: 0; cursor: pointer;
+    position: relative; z-index: 2; margin-top: -5px; margin-bottom: 0; touch-action: pan-y;
   }
-
-  /* ── LABELS & SECTIONS ── */
   .section-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
 
-  /* ── BUTTONS ── */
   .btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
   .btn {
-    padding: 3px 7px;
-    border-radius: 5px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--muted);
-    font-size: 11px;
-    font-family: inherit;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.12s ease;
-    line-height: 1.2;
-    user-select: none;
+    padding: 3px 7px; border-radius: 5px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--muted); font-size: 11px;
+    font-family: inherit; font-weight: 500; cursor: pointer;
+    transition: all 0.12s ease; line-height: 1.2; user-select: none;
   }
   .btn:hover { border-color: var(--muted); }
   .btn.active { background: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 700; }
 
-  /* ── TP / TT GRIDS ── */
   .tp-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
   .tp-btn {
-    min-width: 25px;
-    height: 22px;
-    padding: 0 4px;
-    border-radius: 5px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.12s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
+    min-width: 25px; height: 22px; padding: 0 4px; border-radius: 5px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--muted); font-size: 11px; font-weight: 700; font-family: inherit;
+    cursor: pointer; transition: all 0.12s ease; display: inline-flex;
+    align-items: center; justify-content: center; user-select: none;
   }
   .tp-btn:hover { border-color: var(--muted); }
   .tp-btn.active { background: var(--accent); border-color: var(--accent); color: #ffffff; }
   .tp-desempeno-block {
-    margin-bottom: 6px;
-    background: rgba(125, 125, 125, 0.04);
-    padding: 5px 7px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
+    margin-bottom: 6px; background: rgba(125, 125, 125, 0.04);
+    padding: 5px 7px; border-radius: 6px; border: 1px solid var(--border);
   }
   .tp-desempeno-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; font-weight: 700; }
+  
   .nav-btn-wrap { text-align: center; padding: 32px 0 8px; }
   .nav-btn {
     display: inline-flex; align-items: center; gap: 8px;
@@ -292,6 +156,7 @@
 
 <div class="layout">
 <div class="col-notes">
+
 <!-- COMPROMISO -->
 <div class="card">
   <div class="card-left">
@@ -299,7 +164,7 @@
     
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">Asistencia <span>25%</span></span>
+        <span class="nota-bar-name">Asistencia <span>20%</span></span>
         <span class="nota-bar-val"><span id="disp-asist">0%</span> <span id="aporte-asist" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="track"><div class="track-fill" id="fill-asist" style="background:var(--c-asist);width:0%"></div></div>
@@ -308,7 +173,7 @@
 
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">EPP <span>10%</span></span>
+        <span class="nota-bar-name">EPP <span>20%</span></span>
         <span class="nota-bar-val"><span id="disp-epp">0%</span> <span id="aporte-epp" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="track"><div class="track-fill" id="fill-epp" style="background:var(--c-epp);width:0%"></div></div>
@@ -317,7 +182,7 @@
 
     <div class="nota-bar-row" style="margin-bottom:6px;">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">Participación <span>65%</span></span>
+        <span class="nota-bar-name">Participación <span>60%</span></span>
         <span class="nota-bar-val"><span id="disp-partic">N (0.0)</span> <span id="aporte-partic" style="opacity:0.6;font-weight:400"></span></span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-partic" style="background:var(--c-partic);width:0%"></div></div>
@@ -327,9 +192,7 @@
   </div>
   <div class="card-right">
     <div class="card-value" id="val-n1">0.0</div>
-    <div class="pie-wrapper">
-      <canvas id="chartN1"></canvas>
-    </div>
+    <div class="pie-wrapper"><canvas id="chartN1"></canvas></div>
   </div>
 </div>
 
@@ -360,9 +223,7 @@
   </div>
   <div class="card-right">
     <div class="card-value" id="val-n2">0.0</div>
-    <div class="pie-wrapper">
-      <canvas id="chartN2"></canvas>
-    </div>
+    <div class="pie-wrapper"><canvas id="chartN2"></canvas></div>
   </div>
 </div>
 
@@ -377,9 +238,7 @@
   </div>
   <div class="card-right">
     <div class="card-value" id="val-n3">0.0</div>
-    <div class="pie-wrapper">
-      <canvas id="chartN3"></canvas>
-    </div>
+    <div class="pie-wrapper"><canvas id="chartN3"></canvas></div>
   </div>
 </div>
 
@@ -413,17 +272,14 @@
   </div>
   <div class="card-right">
     <div class="card-value" id="lbl-final" style="font-size:32px">0.0</div>
-    <div class="pie-wrapper">
-      <canvas id="chartFinal"></canvas>
-    </div>
+    <div class="pie-wrapper"><canvas id="chartFinal"></canvas></div>
   </div>
-</div><!-- /card-final-sticky -->
+</div>
+
 </div><!-- /layout -->
 
 <script>
-// ── Utilidades ──
 const roundHalf = n => Math.round(n * 2) / 2;
-// Replica exacta de REDONDEAR() de Excel: redondeo aritmético simétrico
 const excelRound = (n, dec) => {
   const factor = Math.pow(10, dec);
   return Math.round((n + Number.EPSILON) * factor) / factor;
@@ -435,19 +291,16 @@ const gradeColor = n => n >= 7 ? (dark() ? '#34d399' : '#047857') : n >= 5 ? (da
 const el = id => document.getElementById(id);
 const sum = arr => arr.reduce((a, b) => a + b, 0);
 
-// ── Paletas (light / dark) ──
 const PALETTES = {
   light: { n1:'#4f46e5', n2:'#ea580c', n3:'#059669', asist:'#0284c7', epp:'#9333ea', partic:'#0d9488', tt:'#d97706', examen:'#e11d48', tp:'#059669' },
   dark:  { n1:'#818cf8', n2:'#fb923c', n3:'#34d399', asist:'#38bdf8', epp:'#c084fc', partic:'#2dd4bf', tt:'#fde047', examen:'#fb7185', tp:'#34d399' }
 };
 const pal = () => PALETTES[dark() ? 'dark' : 'light'];
 
-// ── Escalas ──
 const PART_SCALE = ["N","I","R","B","MB","E"];
 const TT_SCALE   = ["T4","T3","T2","T1","T"];
 const TP_SCALE   = ["I","R","B","MB","E"];
 
-// ── Estado ──
 const S = {
   asist: 0, epp: 0, partic: "N",
   ttSel:   [false,false,false,false],
@@ -457,7 +310,6 @@ const S = {
   tpDesemp:Array(6).fill("B")
 };
 
-// ── Funciones de ajuste ──
 function adjPartic(v, a) {
   if (v==="E") return 10; if (v==="MB") return 9;
   if (v==="B") return a>=8?8:7;
@@ -481,7 +333,6 @@ function adjTP(v, n1) {
   return 0;
 }
 
-// ── Charts ──
 function makeDonut(id, data, colors, cutout="70%") {
   return new Chart(el(id).getContext('2d'), {
     type: 'doughnut',
@@ -502,9 +353,6 @@ const cN1    = makeDonut('chartN1',    [0,0,0,10], [p0.asist,p0.epp,p0.partic,ec
 const cN2    = makeDonut('chartN2',    [0,0,10],   [p0.tt,p0.examen,ec]);
 const cN3    = makeDonut('chartN3',    Array(7).fill(0), [...Array(6).fill(p0.tp),ec]);
 
-// ── Construcción de UI dinámica ──
-
-// Participación
 const bPartic = el('btns-partic');
 PART_SCALE.forEach(s => {
   const b = document.createElement('button');
@@ -519,7 +367,6 @@ PART_SCALE.forEach(s => {
   bPartic.appendChild(b);
 });
 
-// Función auxiliar para construir bloques de botones TT/TP
 function buildBtnBlock(container, scale, getActive, onSelect) {
   const bg = document.createElement('div');
   bg.className = 'btn-group';
@@ -539,7 +386,6 @@ function buildBtnBlock(container, scale, getActive, onSelect) {
   return bg;
 }
 
-// TT Grid
 const ttGrid = el('tt-grid'), ttBlocks = el('tt-blocks');
 for (let i = 0; i < 4; i++) {
   const b = document.createElement('button');
@@ -565,7 +411,6 @@ for (let i = 0; i < 4; i++) {
   ttBlocks.appendChild(w);
 }
 
-// TP Grid
 const tpG = el('tp-grid'), tpD = el('tp-desempenos');
 for (let i = 0; i < 6; i++) {
   const b = document.createElement('button');
@@ -582,7 +427,6 @@ for (let i = 0; i < 6; i++) {
   tpD.appendChild(w);
 }
 
-// Barras de TPs
 const tpBarsContainer = el('tp-bars');
 for (let i = 0; i < 6; i++) {
   const row = document.createElement('div');
@@ -596,32 +440,69 @@ for (let i = 0; i < 6; i++) {
   tpBarsContainer.appendChild(row);
 }
 
-// Sliders
 el('sl-asist').oninput  = e => { S.asist  = +e.target.value; render(); };
 el('sl-epp').oninput    = e => { S.epp    = +e.target.value; render(); };
 el('sl-examen').oninput = e => { S.examen = +e.target.value; render(); };
 
+// Lectura de parámetros URL para precarga desde el registro
+function loadFromURL() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.has('asist')) {
+    S.asist = Math.min(100, Math.max(0, +p.get('asist') || 0));
+    el('sl-asist').value = S.asist;
+  }
+  if (p.has('epp')) {
+    S.epp = Math.min(100, Math.max(0, +p.get('epp') || 0));
+    el('sl-epp').value = S.epp;
+  }
+  if (p.has('partic') && PART_SCALE.includes(p.get('partic'))) {
+    S.partic = p.get('partic');
+    bPartic.querySelectorAll('.btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tag === S.partic));
+  }
+  if (p.has('ex')) {
+    S.examen = Math.min(10, Math.max(0, +p.get('ex') || 0));
+    el('sl-examen').value = S.examen;
+  }
+  if (p.has('tt')) {
+    const arr = p.get('tt').split(',');
+    arr.forEach((val, i) => {
+      if (i < 4 && val) {
+        S.ttSel[i] = true;
+        S.ttDesemp[i] = TT_SCALE.includes(val) ? val : 'T';
+        el(`ttd-${i}`).querySelector('.btn-group')?.querySelectorAll('.btn').forEach(btn => btn.classList.toggle('active', btn.textContent === S.ttDesemp[i]));
+      }
+    });
+  }
+  if (p.has('tp')) {
+    const arr = p.get('tp').split(',');
+    arr.forEach((val, i) => {
+      if (i < 6 && val) {
+        S.tpSel[i] = true;
+        S.tpDesemp[i] = TP_SCALE.includes(val) ? val : 'B';
+        el(`tpd-${i}`).querySelector('.btn-group')?.querySelectorAll('.btn').forEach(btn => btn.classList.toggle('active', btn.textContent === S.tpDesemp[i]));
+      }
+    });
+  }
+}
+
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 
-// ── Render ──
 function render() {
   const p = pal(), bgEmpty = emptyColor();
 
-  // ── CÁLCULOS — sin redondeo en componentes, solo en n1/n2/n3/nf ──
-
-  // Nota 1
+  // Ponderaciones 20% - 20% - 60%
   const asistDec = S.asist / 10;
   const pAj      = adjPartic(S.partic, asistDec);
-  const aAsist   = asistDec * 0.25;
-  const aEpp     = (S.epp / 10) * 0.1;
-  const aPartic  = pAj * 0.65;
+  const aAsist   = asistDec * 0.20;
+  const aEpp     = (S.epp / 10) * 0.20;
+  const aPartic  = pAj * 0.60;
   const n1       = excelRound(aAsist + aEpp + aPartic, 1);
 
   // Nota 2
   const ttNums = S.ttDesemp.map((d,i) => S.ttSel[i] ? adjTT(d,n1) : 0);
   const ttProm = sum(ttNums) / 4;
-  const aTT    = ttProm * 0.3;
-  const aEx    = S.examen * 0.7;
+  const aTT    = ttProm * 0.30;
+  const aEx    = S.examen * 0.70;
   const n2     = excelRound(aTT + aEx, 1);
 
   // Nota 3
@@ -689,10 +570,11 @@ function render() {
   upChart(cFinal, [aN1,aN2,aN3, Math.max(0,+(10-aN1-aN2-aN3).toFixed(2))], [p.n1,p.n2,p.n3,bgEmpty]);
 }
 
+loadFromURL();
 render();
 </script>
-  <div class="nav-btn-wrap">
-    <a class="nav-btn" href="registro.html">← Acceder al Registro Estudiantil</a>
-  </div>
+<div class="nav-btn-wrap">
+  <a class="nav-btn" href="registro.html">← Volver al Registro Estudiantil</a>
+</div>
 </body>
 </html>
