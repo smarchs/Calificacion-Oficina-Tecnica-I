@@ -40,7 +40,7 @@
     header h1 { font-size: 26px; }
     .layout { display: grid; grid-template-columns: 1fr 340px; gap: 12px; align-items: start; }
     .col-notes { display: flex; flex-direction: column; gap: 12px; }
-    .card-final-sticky { grid-column: 2; grid-row: 1 / 4; position: sticky; top: 20px; }
+    .card-final-sticky { grid-column: 2; grid-row: 1; position: sticky; top: 20px; }
     .card-title { font-size: 14px; }
     .card-value { font-size: 34px; }
     .nota-bar-name { font-size: 12px; }
@@ -142,7 +142,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .perfil-wrap { display: none; }
-  .nav-btn-wrap { text-align: center; padding: 24px 0 8px; display: flex; justify-content: center; gap: 10px; }
+  .nav-btn-wrap { text-align: center; padding: 32px 0 8px; }
   .nav-btn {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 10px 22px; border-radius: 10px;
@@ -152,7 +152,6 @@
     text-decoration: none;
   }
   .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .nav-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -294,31 +293,11 @@
   </div>
 </div>
 
-<!-- TIP -->
-<div id="tip-card" style="display:none;margin-top:10px;grid-column:2;grid-row:2;position:sticky;top:20px;">
-  <div class="card" style="background:var(--surface);margin-bottom:8px;">
-    <div class="card-left" style="border-right:none;padding:14px 16px;">
-      <div class="card-title" style="margin-bottom:10px;color:var(--green)">¿Qué estoy haciendo bien?</div>
-      <ul id="tip-bien" style="font-size:12px;color:var(--muted);line-height:1.8;padding-left:14px;"></ul>
-    </div>
-  </div>
-  <div class="card" style="background:var(--surface);">
-    <div class="card-left" style="border-right:none;padding:14px 16px;">
-      <div class="card-title" style="margin-bottom:10px;color:var(--col-n2)">¿Cómo puedo subir la nota?</div>
-      <ul id="tip-subir" style="font-size:12px;color:var(--muted);line-height:1.8;padding-left:14px;"></ul>
-    </div>
-  </div>
-</div>
-
 </div><!-- /layout -->
-
-<div class="nav-btn-wrap">
-  <a class="nav-btn primary" id="btn-simular-alumno" href="simulador.html">Simular mi nota a futuro →</a>
-</div>
 </div><!-- /perfil-wrap -->
 
-<div class="nav-btn-wrap" id="nav-btn-general">
-  <a class="nav-btn" href="simulador.html">Ir al Simulador en blanco →</a>
+<div class="nav-btn-wrap">
+  <a class="nav-btn" href="simulador.html">Acceder al Simulador →</a>
 </div>
 
 <script>
@@ -471,7 +450,6 @@ function renderList(suffix) {
 function showProfile(idx) {
   document.querySelectorAll('.student-btn').forEach(b => b.classList.toggle('active', b.dataset.suffix===currentGroup && +b.dataset.idx===idx));
   el('perfil-wrap').style.display = 'block';
-  el('tip-card').style.display = 'none';
 
   const s = allData[currentGroup][idx];
   const p = pal(), ec = emptyColor();
@@ -547,81 +525,6 @@ function showProfile(idx) {
   el('lbl-final').style.color = fc;
   const aN1=n1/3, aN2=n2/3, aN3=n3/3;
   makeDonut('chartFinal',[aN1,aN2,aN3,Math.max(0,10-aN1-aN2-aN3)],[p.n1,p.n2,p.n3,ec],'65%');
-
-  // Enlace dinámico con precarga hacia simulador.html
-  const params = new URLSearchParams({
-    asist: Math.round(asistVal * 10),
-    epp: Math.round(s.eppPct * 100),
-    partic: particVal >= 9.5 ? 'E' : particVal >= 8.5 ? 'MB' : particVal >= 6.5 ? 'B' : particVal >= 4.5 ? 'R' : particVal > 0 ? 'I' : 'N',
-    ex: s.examen,
-    tt: s.ttTexts.map(t => t || '').join(','),
-    tp: s.tpTexts.map(t => t || '').join(',')
-  });
-  el('btn-simular-alumno').href = `simulador.html?${params.toString()}`;
-
-  // ── TIPS ──
-  const exVal = Number(s.examen) || 0;
-  const ttEnt = s.ttTexts.filter(t=>t&&t!=='N').length;
-  const ttATiempo = s.ttTexts.filter(t=>t==='T').length;
-  const tpEnt = s.tpTexts.filter(t=>t&&t!=='N').length;
-  const eppPct100 = Math.round((s.eppPct||0)*100);
-
-  function asistFrase() {
-    if (asistVal === 0)    return ['subir', 'Sin registro de asistencia.'];
-    if (asistVal <= 4)     return ['subir', 'Asistencia muy baja. Cada clase que faltás afecta tu nota directamente.'];
-    if (asistVal <= 6)     return ['subir', 'Asistencia regular. Venir más seguido mejora tu Nota 1.'];
-    if (asistVal <= 8)     return ['bien',  'Buena asistencia. Seguí manteniéndola.'];
-    if (asistVal < 10)     return ['bien',  'Muy buena asistencia. Casi no faltás.'];
-    return                        ['bien',  'Asistencia perfecta en todo el bimestre.'];
-  }
-  function eppFrase() {
-    if (eppPct100 === 0)   return ['subir', 'Sin registro de EPP.'];
-    if (eppPct100 <= 30)   return ['subir', 'EPP casi sin registrar. Traer el equipo completo suma directo a Compromiso.'];
-    if (eppPct100 <= 60)   return ['subir', 'EPP irregular. Traerlo siempre es un punto fácil de no perder.'];
-    if (eppPct100 <= 80)   return ['bien',  'Buen cumplimiento del EPP.'];
-    if (eppPct100 < 100)   return ['bien',  'Muy buen uso del EPP, casi siempre completo.'];
-    return                        ['bien',  'EPP perfecto en todo el bimestre.'];
-  }
-  function particFrase() {
-    if (particVal === 0)   return ['subir', 'Sin registro de participación.'];
-    if (particVal <= 3)    return ['subir', 'Participación muy baja. Es el componente que más pesa en Compromiso.'];
-    if (particVal <= 5)    return ['subir', 'Participación regular. Involucrarte más en clase cambia bastante la nota.'];
-    if (particVal <= 7)    return ['bien',  'Buena participación en clase.'];
-    if (particVal <= 9)    return ['bien',  'Muy buena participación. Se nota el involucramiento.'];
-    return                        ['bien',  'Participación excelente en todo el bimestre.'];
-  }
-  function ttFrase() {
-    if (ttEnt === 0)       return ['subir', 'Ningún trabajo teórico entregado.'];
-    if (ttEnt === 1)       return ['subir', 'Solo 1 TT entregado. Cada entrega sube el promedio de Teoría.'];
-    if (ttEnt === 2)       return ['subir', '2 TTs entregados. Quedan 2 para completar.'];
-    if (ttEnt === 3)       return ['bien',  '3 TTs entregados. Falta 1 para tenerlos todos.'];
-    if (ttATiempo < 4)     return ['bien',  'Los 4 TTs entregados, con algún retraso.'];
-    return                        ['bien',  'Los 4 TTs entregados a tiempo.'];
-  }
-  function examFrase() {
-    if (exVal === 0)       return ['subir', 'El examen no fue rendido. Pesa 70% en Teoría.'];
-    if (exVal <= 3)        return ['subir', 'Examen muy por debajo del aprobado.'];
-    if (exVal < 6)         return ['subir', 'Examen cerca del aprobado pero todavía no llega.'];
-    if (exVal < 8)         return ['bien',  'Examen aprobado.'];
-    if (exVal < 9)         return ['bien',  'Muy buen examen, arriba de 8.'];
-    return                        ['bien',  'Examen excelente, arriba de 9.'];
-  }
-  function tpFrase() {
-    if (tpEnt === 0)       return ['subir', 'Ningún trabajo práctico entregado.'];
-    if (tpEnt === 1)       return ['subir', 'Solo 1 TP entregado. Cada práctica suma directo a Nota 3.'];
-    if (tpEnt <= 3)        return ['subir', '2 o 3 TPs entregados. Hay margen para mejorar.'];
-    if (tpEnt === 4)       return ['bien',  '4 TPs entregados.'];
-    if (tpEnt === 5)       return ['bien',  '5 TPs entregados. Falta 1 para completar.'];
-    return                        ['bien',  'Los 6 TPs entregados.'];
-  }
-
-  const frases = [asistFrase(), eppFrase(), particFrase(), ttFrase(), examFrase(), tpFrase()];
-  const bien  = frases.filter(f=>f[0]==='bien').map(f=>f[1]);
-  const subir = frases.filter(f=>f[0]==='subir').map(f=>f[1]);
-
-  el('tip-bien').innerHTML  = bien.length  ? bien.map(f=>`<li>${f}</li>`).join('') : '<li>—</li>';
-  el('tip-subir').innerHTML = subir.length ? subir.map(f=>`<li>${f}</li>`).join('') : '<li>Todo en orden por ahora.</li>';
-  el('tip-card').style.display = 'block';
 
   el('perfil-wrap').scrollIntoView({behavior:'smooth',block:'start'});
 }

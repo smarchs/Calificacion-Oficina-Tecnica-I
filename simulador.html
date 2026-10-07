@@ -444,53 +444,11 @@ el('sl-asist').oninput  = e => { S.asist  = +e.target.value; render(); };
 el('sl-epp').oninput    = e => { S.epp    = +e.target.value; render(); };
 el('sl-examen').oninput = e => { S.examen = +e.target.value; render(); };
 
-// Lectura de parámetros URL para precarga desde el registro
-function loadFromURL() {
-  const p = new URLSearchParams(window.location.search);
-  if (p.has('asist')) {
-    S.asist = Math.min(100, Math.max(0, +p.get('asist') || 0));
-    el('sl-asist').value = S.asist;
-  }
-  if (p.has('epp')) {
-    S.epp = Math.min(100, Math.max(0, +p.get('epp') || 0));
-    el('sl-epp').value = S.epp;
-  }
-  if (p.has('partic') && PART_SCALE.includes(p.get('partic'))) {
-    S.partic = p.get('partic');
-    bPartic.querySelectorAll('.btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tag === S.partic));
-  }
-  if (p.has('ex')) {
-    S.examen = Math.min(10, Math.max(0, +p.get('ex') || 0));
-    el('sl-examen').value = S.examen;
-  }
-  if (p.has('tt')) {
-    const arr = p.get('tt').split(',');
-    arr.forEach((val, i) => {
-      if (i < 4 && val) {
-        S.ttSel[i] = true;
-        S.ttDesemp[i] = TT_SCALE.includes(val) ? val : 'T';
-        el(`ttd-${i}`).querySelector('.btn-group')?.querySelectorAll('.btn').forEach(btn => btn.classList.toggle('active', btn.textContent === S.ttDesemp[i]));
-      }
-    });
-  }
-  if (p.has('tp')) {
-    const arr = p.get('tp').split(',');
-    arr.forEach((val, i) => {
-      if (i < 6 && val) {
-        S.tpSel[i] = true;
-        S.tpDesemp[i] = TP_SCALE.includes(val) ? val : 'B';
-        el(`tpd-${i}`).querySelector('.btn-group')?.querySelectorAll('.btn').forEach(btn => btn.classList.toggle('active', btn.textContent === S.tpDesemp[i]));
-      }
-    });
-  }
-}
-
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 
 function render() {
   const p = pal(), bgEmpty = emptyColor();
 
-  // Ponderaciones 20% - 20% - 60%
   const asistDec = S.asist / 10;
   const pAj      = adjPartic(S.partic, asistDec);
   const aAsist   = asistDec * 0.20;
@@ -498,23 +456,19 @@ function render() {
   const aPartic  = pAj * 0.60;
   const n1       = excelRound(aAsist + aEpp + aPartic, 1);
 
-  // Nota 2
   const ttNums = S.ttDesemp.map((d,i) => S.ttSel[i] ? adjTT(d,n1) : 0);
   const ttProm = sum(ttNums) / 4;
   const aTT    = ttProm * 0.30;
   const aEx    = S.examen * 0.70;
   const n2     = excelRound(aTT + aEx, 1);
 
-  // Nota 3
   const tpNums    = S.tpDesemp.map((d,i) => S.tpSel[i] ? adjTP(d,n1) : 0);
   const n3        = excelRound(sum(tpNums) / 6, 1);
   const tpAportes = tpNums.map(v => v / 6);
 
-  // Nota Final
   const nf = roundHalf((n1+n2+n3)/3);
   const fc = gradeColor(nf);
 
-  // UI N1
   el('val-n1').textContent   = fmt(n1);
   el('val-n1').style.color   = gradeColor(n1);
   el('disp-asist').textContent  = `${S.asist}%`;
@@ -528,7 +482,6 @@ function render() {
   el('aporte-partic').textContent = `(+${aPartic.toFixed(2)})`;
   upChart(cN1, [aAsist,aEpp,aPartic, Math.max(0, 10-aAsist-aEpp-aPartic)], [p.asist,p.epp,p.partic,bgEmpty]);
 
-  // UI N2
   el('val-n2').textContent   = fmt(n2);
   el('val-n2').style.color   = gradeColor(n2);
   el('disp-examen').textContent = S.examen.toFixed(1);
@@ -543,7 +496,6 @@ function render() {
   }
   upChart(cN2, [aTT,aEx, Math.max(0, 10-aTT-aEx)], [p.tt,p.examen,bgEmpty]);
 
-  // UI N3
   el('val-n3').textContent = fmt(n3);
   el('val-n3').style.color = gradeColor(n3);
   const sumaTP = sum(tpAportes);
@@ -557,7 +509,6 @@ function render() {
   upChart(cN3, [...tpAportes, Math.max(0, 10-sumaTP)],
                [...tpNums.map((_,i) => S.tpSel[i]?p.tp:bgEmpty), bgEmpty]);
 
-  // UI Final
   el('lbl-n1').textContent   = fmt(n1);
   el('lbl-n2').textContent   = fmt(n2);
   el('lbl-n3').textContent   = fmt(n3);
@@ -570,11 +521,10 @@ function render() {
   upChart(cFinal, [aN1,aN2,aN3, Math.max(0,+(10-aN1-aN2-aN3).toFixed(2))], [p.n1,p.n2,p.n3,bgEmpty]);
 }
 
-loadFromURL();
 render();
 </script>
 <div class="nav-btn-wrap">
-  <a class="nav-btn" href="registro.html">← Volver al Registro Estudiantil</a>
+  <a class="nav-btn" href="registro.html">← Acceder al Registro Estudiantil</a>
 </div>
 </body>
 </html>
