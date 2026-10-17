@@ -301,7 +301,7 @@
 </div>
 
 <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzB4weKb5KlvmZ4qNeek-oKDSUb56yqPJWt1wyNOcoqIOoFZDKJ39IUSvAlKJO0dRzA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmW4jTsNZ8PQDCxnhIuqfkpscUVHiw_XUeM2J-TFyZeVezXXKfQG5mKhF51GnSZidY/exec';
 
 const fmt = n => Math.abs(n-10)<1e-6 ? '10' : Number(n).toFixed(1);
 const dark = () => window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -316,20 +316,21 @@ const PALETTES = {
 };
 const pal = () => PALETTES[dark()?'dark':'light'];
 
-function ttTextToNum(txt, n1) {
+function ttTextToNum(txt, asist) {
   if (txt==='T')  return 10;
-  if (txt==='T1') return n1>=9?9:8;
-  if (txt==='T2') return n1>=7?7:6;
-  if (txt==='T3') return n1>=5?5:4;
-  if (txt==='T4') return n1<2?1:n1<3?2:3;
+  if (txt==='T1') return asist>=9 ? 9 : 8;
+  if (txt==='T2') return asist>=7 ? 7 : 6;
+  if (txt==='T3') return asist>=5 ? 5 : 4;
+  if (txt==='T4') return asist<2 ? 1 : asist<3 ? 2 : 3;
   return 0;
 }
-function tpTextToNum(txt, n1) {
+
+function tpTextToNum(txt, asist) {
   if (txt==='E')  return 10;
   if (txt==='MB') return 9;
-  if (txt==='B')  return n1>=8?8:7;
-  if (txt==='R')  return n1>=6?6:5;
-  if (txt==='I')  return n1<2?1:n1<3?2:n1<4?3:4;
+  if (txt==='B')  return asist>=8 ? 8 : 7;
+  if (txt==='R')  return asist>=6 ? 6 : 5;
+  if (txt==='I')  return asist<2 ? 1 : asist<3 ? 2 : asist<4 ? 3 : 4;
   return 0;
 }
 
@@ -382,25 +383,26 @@ async function fetchSheet(suffix) {
 }
 
 function parseStudents(rows) {
+  if (!Array.isArray(rows)) return [];
   return rows.map(s => {
     const n1 = Number(s.n1) || 0;
     const eppRaw = s.epp;
     let eppPct = 0;
-    if (eppRaw !== null && eppRaw !== '' && eppRaw !== 0) {
-      const num = parseFloat(String(eppRaw).replace('%',''));
+    if (eppRaw !== null && eppRaw !== '' && eppRaw !== undefined) {
+      const num = parseFloat(String(eppRaw).replace('%','').replace(',','.'));
       if (!isNaN(num)) eppPct = num > 1 ? num/100 : num;
     }
     const asist = Number(s.asist) || 0;
     const particVal = Number(s.partic) || 0;
 
-    const ttTexts = [s.tt1, s.tt2, s.tt3, s.tt4].map(v => v ? String(v).trim() : null);
-    const ttNums  = ttTexts.map(t => t ? ttTextToNum(t, n1) : 0);
+    const ttTexts = [s.tt1, s.tt2, s.tt3, s.tt4].map(v => (v !== null && v !== undefined && String(v).trim() !== '') ? String(v).trim() : null);
+    const ttNums  = ttTexts.map(t => t ? ttTextToNum(t, asist) : 0);
 
-    const tpTexts = [s.tp1, s.tp2, s.tp3, s.tp4, s.tp5, s.tp6].map(v => v ? String(v).trim() : null);
-    const tpNums  = tpTexts.map(t => t ? tpTextToNum(t, n1) : 0);
+    const tpTexts = [s.tp1, s.tp2, s.tp3, s.tp4, s.tp5, s.tp6].map(v => (v !== null && v !== undefined && String(v).trim() !== '') ? String(v).trim() : null);
+    const tpNums  = tpTexts.map(t => t ? tpTextToNum(t, asist) : 0);
 
     return {
-      nombre:    s.nombre,
+      nombre:    s.nombre || '',
       asist,
       eppPct,
       n1,
