@@ -231,7 +231,7 @@
 <div class="card">
   <div class="card-left">
     <div class="card-title">Nota 3: Práctica</div>
-    <div class="section-label">Trabajos prácticos entregados (AutoCAD)</div>
+    <div class="section-label">Trabajos prácticos entregados</div>
     <div class="tp-grid" id="tp-grid"></div>
     <div id="tp-desempenos"></div>
     <div id="tp-bars" style="margin-top:4px;"></div>
@@ -250,21 +250,21 @@
     <div class="card-title">Nota Final</div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">Compromiso <span>33.3%</span></span>
+        <span class="nota-bar-name">Compromiso <span>33%</span></span>
         <span class="nota-bar-val" id="lbl-n1" style="color:var(--col-n1)">0.0</span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="bar-n1" style="background:var(--col-n1);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">Teoría <span>33.3%</span></span>
+        <span class="nota-bar-name">Teoría <span>33%</span></span>
         <span class="nota-bar-val" id="lbl-n2" style="color:var(--col-n2)">0.0</span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="bar-n2" style="background:var(--col-n2);width:0%"></div></div>
     </div>
     <div class="nota-bar-row">
       <div class="nota-bar-header">
-        <span class="nota-bar-name">Práctica <span>33.3%</span></span>
+        <span class="nota-bar-name">Práctica <span>33%</span></span>
         <span class="nota-bar-val" id="lbl-n3" style="color:var(--col-n3)">0.0</span>
       </div>
       <div class="nota-bar-track"><div class="nota-bar-fill" id="bar-n3" style="background:var(--col-n3);width:0%"></div></div>
@@ -433,7 +433,7 @@ for (let i = 0; i < 8; i++) {
   row.className = 'nota-bar-row';
   row.innerHTML = `
     <div class="nota-bar-header">
-      <span class="nota-bar-name">TP ${i+1} <span>12.5%</span></span>
+      <span class="nota-bar-name">TP ${i+1} <span>16.7%</span></span>
       <span class="nota-bar-val"><span id="lbl-tp-val-${i}">0.0</span> <span id="lbl-tp-ap-${i}" style="opacity:0.6;font-weight:400">(+0.00)</span></span>
     </div>
     <div class="nota-bar-track"><div class="nota-bar-fill" id="fill-tp-${i}" style="background:var(--c-tp);width:0%"></div></div>`;
@@ -462,7 +462,6 @@ function render() {
   const aEx    = S.examen * 0.70;
   const n2     = excelRound(aTT + aEx, 1);
 
-  // 8 Trabajos Prácticos ajustados por Nota 1 y divididos entre 8
   const tpNums    = S.tpDesemp.map((d,i) => S.tpSel[i] ? adjTP(d,n1) : 0);
   const n3        = excelRound(sum(tpNums) / 8, 1);
   const tpAportes = tpNums.map(v => v / 8);
